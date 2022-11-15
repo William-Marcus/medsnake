@@ -23,6 +23,7 @@ v: Tighten Inner
 b: Loosen Inner
 q: Demo
 o: Emergency Stop
+j: Joystick Steering
  
 CTRL-C to quit
  

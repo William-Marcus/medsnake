@@ -632,6 +632,41 @@ void MedicalSnake::backward_outer()
   move_position({"outer_snake_rail"}, radians);
 }
 
+void MedicalSnake::steer_angle(float x, float y) {
+  set_mode(modes::MOVING_POSITION);
+
+  double CR = .0047;
+  // Finding phi in radians
+  float phi = y * -.5 * M_PI();
+  // Finding theta in radians
+  float theta = atan2(y, x);
+
+  float A = sqrt(4 * pow(CR, 2) * pow(cos(theta), 2) * pow(sin(phi/2), 2)) / (M_PI * pow(.01, 2));
+  float B = sqrt(-pow(CR, 2)*(-2 + cos(theta) + sqrt(3) * sin(2 * theta)) * pow(sin(.5 * phi, 2))  / (M_PI * .01 * 2);
+  float C = sqrt(pow(CR, 2) * (2 - cos(2 * theta) + sqrt(3) * sin(2*theta)) * pow(sin(.5 * phi), 2))  / (M_PI * .01 * 2);
+  
+  if (theta>=0)&&theta<(M_PI*.5)) {
+    C = -C;
+  } else if (theta>(M_PI*.5)&&theta<M_PI) {
+    B = -B;
+  } else if (theta>M_PI&&theta<(M_PI*1.5)) {
+    B = -B;
+    A = -A;
+  } else if (theta>(M_PI*1.5)&&theta<(2*M_PI)) {
+    C = -C;
+    A = -A;
+  } else if (theta == (M_PI * .5)) {
+    B = -B;
+    C = -C;
+  } else if (theta == (M_PI*1.5)) {
+    A = -A;
+  };
+
+  move_position({{"outer_snake_cable_A", A}, 
+                 {"outer_snake_cable_B", B}, 
+                 {"outer_snake_cable_C", C}});
+  print_goal();
+}
 
 void MedicalSnake::steer_left()
 { // TODO(Maggie): Change the value by experiment if necessary

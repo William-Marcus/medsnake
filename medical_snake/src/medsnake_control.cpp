@@ -43,6 +43,11 @@ void SnakeControl::init_listener()
   sub_ = nh_.subscribe("gui_commands", 100, &SnakeControl::command_set, this);
 }
 
+void SnakeControl::init_listener() 
+{
+  tension_sub_ = nh_.subscribe("joy", 1, &SnakeControl::command_set, this)
+}
+
 void SnakeControl::init_tension_publisher()
 {
   pub_ = nh_.advertise<medical_snake::Tension_readings>("tension_readings", 1);
@@ -257,6 +262,14 @@ void SnakeControl::loosen_outer_C()
 {
   snake_.loosen_outer_C();
   command_queue_.erase(command_queue_.begin());
+}
+
+// Steering to custom angle
+void SnakeControl::steer_custom_angle(float x_joystick_pos, float y_joystick_pos)
+{
+  snake_.steer_angle(x_joystick_pos, y_joystick_pos);
+  // Want to steer to live angle, so clearing command queue to avoid delay
+  command_queue.erase(command_queue_.clear());
 }
 
 bool SnakeControl::cmd_queue_empty() {return command_queue_.empty();}

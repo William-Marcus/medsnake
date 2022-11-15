@@ -1,6 +1,10 @@
 import os
 import rospy
+import rosnode
 import rospkg
+import datetime
+from time import time, sleep
+import numpy
 
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
@@ -8,7 +12,7 @@ from python_qt_binding.QtWidgets import QWidget
 from python_qt_binding.QtGui import QIcon
 from std_msgs.msg import Char, String
 from medical_snake.msg import Tension_readings
-
+from sensor_msgs.msg import Joy 
 
 class MyPlugin(Plugin):
 
@@ -82,7 +86,7 @@ class MyPlugin(Plugin):
         
         self._widget.forward_inner.clicked[bool].connect(self.handle_forward_inner_clicked)
         self._widget.backward_inner.clicked[bool].connect(self.handle_backward_inner_clicked)
-        self._widget.home_snake.clicked[bool].connect(self.homing_snake)
+        # self._widget.home_snake.clicked[bool].connect(self.homing_snake)
         
         # Set up a publisher for the gui_commands
         self.pub_ = rospy.Publisher('/gui_commands', Char, queue_size=1)
@@ -92,35 +96,27 @@ class MyPlugin(Plugin):
         
         self.medsnake_mode_sub_ = rospy.Subscriber('/medsnake_mode', String, self.snake_mode_cb)
         self.tension_reading_sub_ = rospy.Subscriber('/tension_readings', Tension_readings, self.snake_tension_cb)
-        self.homing_sub_ = rospy.Subscriber('', , self.homing_snake)
-        
+        self.joystick_sub_ = rospy.Subscriber('/joy', Joy, self.joystick_data_cb) 
+                      
     def snake_mode_cb(self, data):
         self._widget.snake_mode.setText(data.data)
-        if data.data == "Snake is Ready":
-            self._widget.snake_mode.setStyleSheet("background-color: white")
-        else:
+        if data.data not "Snake is Ready":
             self._widget.snake_mode.setStyleSheet("background-color: red")
+        self.joystick_active_cb()
+            
+    def joystick_active_cb(self):
+        if "/joy_node" in rosnode.get_node_names():
+            self._widget.joy_connected.setText("Active")
+        else:
+            self._widget.joy_connected.setText("Inactive")
+
     # self.tension_array = []
     def snake_tension_cb(self, tension):
         # global tension_array
-        self._widget.inner_tension.setText(str(round(tension.inner_snake_cable, 2)))
-        self._widget.outer_tension_a.setText(str(round(tension.outer_snake_cable_A, 2)))
-        self._widget.outer_tension_b.setText(str(round(tension.outer_snake_cable_B, 2)))
-        self._widget.outer_tension_c.setText(str(round(tension.outer_snake_cable_C, 2)))
-        # tension_array = [tension.inner_snae_cable, tension.outer_snake_cable_A, tension.outer_snake_cable_B, tension.outer_snake_cable_C]
-        
-    # def homing_snake(self, status):
-    #     while status == can_continue:
-    #         can_home = True
-    #         for i in tension_array:
-    #             if i > 2:
-    #                 can_home = False
-    #                 self.pub_.publish(103)
-    #                 self.pub_.publish(98)
-                    
-    #         if can_home == True: 
-    #             self.pub_.publish(117)
-    #             self.pub_.publish(99)
+        self._widget.inner_tension.setText(str(round(tension.inner_snake_cable, 2)) + " N")
+        self._widget.outer_tension_a.setText(str(round(tension.outer_snake_cable_A, 2)) + " N")
+        self._widget.outer_tension_b.setText(str(round(tension.outer_snake_cable_B, 2)) + " N")
+        self._widget.outer_tension_c.setText(str(round(tension.outer_snake_cable_C, 2)) + " N")
         
     def shutdown_plugin(self):
         # TODO unregister all publishers here
@@ -205,9 +201,8 @@ class MyPlugin(Plugin):
         data = 113 # q
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
-    
-    
-    
+        
+          
     
     # Individual outer cable event handle
     def handle_tighten_outer_A_clicked(self):
@@ -223,17 +218,12 @@ class MyPlugin(Plugin):
     def handle_tighten_outer_C_clicked(self):
         data = 106 # j
         # rospy.loginfo(chr(data))
-        self.pub_.publish(data)
-        
-    def handle_loosen_outer_A_clicked(self):
-        data = 112 # p
-        # rospy.loginfo(chr(data))
-        self.pub_.publish(data)
+        self.pub_.publish(data)  ros::init(argc, argv, "medsnake_main_node");
+
 
     def handle_loosen_outer_B_clicked(self):
-        data = 108 # l
-        # rospy.loginfo(chr(data))
-        self.pub_.publish(data)
+        data = 108 # l  File "/home/biomed/julius/medsnake_julius_ws/src/medsnake_gui/src/medsnake_gui/my_module.py", line 279
+
         
     def handle_loosen_outer_C_clicked(self):
         data = 110 # n
@@ -260,3 +250,57 @@ class MyPlugin(Plugin):
         data = 99 # c
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
+    
+    def joystick_data_cb(self, joystick_data):
+        # Updating GUI widget
+        self.x_pos = joystick_data.axes[0]
+        self.y_pos = joystick_data.axes[1]
+        
+        # Calculating the angle of the joystick position, accounting for arctan range being -90 to 90
+        
+        self.joy_angle = self.determine_joy_angle([self.x_pos, -self.y_pos])
+        self._widget.joy_angle.setText(str(self.joy_angle)+"°")
+        self._widget.joystickKnob.move(round((-self.x_pos+1.2)*30.5, 2), round((-self.y_pos+1.2)*30.5, 2))
+        
+        # Running functions at joystick unit vector positions, cases (0, 1), (1, 0), (-1, 0), (0, -1)
+        
+        if self.x_pos == 0 and self.y_pos == 1:
+            # moving down
+            self.handle_up_clicked()
+        elif self.x_pos == 1 and self.y_pos == 0:
+            # moving left
+            self.handle_left_clicked()
+        elif self.x_pos == 0 and self.y_pos == -1:
+            # moving up
+            self.handle_down_clicked()
+        elif self.x_pos == -1 and self.y_pos == 0:
+            # moving right
+            self.handle_right_clicked()
+            
+        # Checking for buttons pressed down
+        
+        # Stop
+        if joystick_data.buttons[9] == 1:
+            self.handle_stop_clicked()
+            
+        # Advance
+        if joystick_data.buttons[6] == 1:
+            self.handle_advance_clicked()
+        
+        # Retract 
+        if joystick_data.buttons[4] == 1:
+            self.handle_retract_clicked()
+        
+    
+    def determine_joy_angle(self, position_array):
+        # Function determines joystick angle by taking x and y positions of joystick, then arctan
+        # x position must be first input array element, y position second
+        # Returned value is rounded to 1st decimal place
+        if position_array[0] == 0 and position_array[1] == 0:
+            return 0
+        else:
+            return round((numpy.arctan2(position_array[1], position_array[0]) * (180/numpy.pi)) + 180, 1)
+
+        
+    
+        
