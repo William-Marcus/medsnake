@@ -15,6 +15,13 @@ feedback_items:
 # Maximum velocity for all snake cables
 max_velocity: 500 # 5 rev/min
 
+feeding_velocity: 2600 # 2600 is the upper limit
+
+goal_velocity: 250
+
+goal_tension_inner: 60
+goal_tension_outer: 8
+
 current_offset:
   inner_snake_cable: 113.61906510034264
   inner_snake_rail: 0.0

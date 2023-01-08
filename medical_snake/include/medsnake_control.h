@@ -9,8 +9,11 @@
 #include <ros/ros.h>
 #include "std_msgs/Char.h"
 #include "std_msgs/String.h"
+#include <sensor_msgs/Joy.h>
 #include "medical_snake/Tension_readings.h"
 #include "medical_snake.h"
+#include <std_msgs/Bool.h>
+#include <geometry_msgs/Vector3Stamped.h>
 
 
 
@@ -88,6 +91,12 @@ class SnakeControl
   char get_cmd_queue_top();
 
   bool snake_is_ready();
+  bool snake_is_steering();
+
+  void steer_angle();
+  void update_steer_angle();
+
+  void joystick_cb(const sensor_msgs::Joy::ConstPtr &msg);
 
  private:
   MedicalSnake snake_;
@@ -95,6 +104,9 @@ class SnakeControl
   ros::Publisher pub_;
   ros::Publisher mode_pub_;
   ros::NodeHandle nh_;
+  ros::Subscriber joystick_sub_;
   std::vector<char> command_queue_;
   std::map<std::string, double> tension_dic_;
+  float x_joystick_pos, y_joystick_pos;
+  bool steering_flag_=false;
 };

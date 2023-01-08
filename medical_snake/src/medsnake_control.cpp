@@ -1,6 +1,5 @@
 #include "medsnake_control.h"
 
-
 SnakeControl::SnakeControl(const char* port_name, const char* config_path, const char* dxl_config_path) : snake_(port_name)
 {
   init_listener();
@@ -23,29 +22,48 @@ void SnakeControl::command_set(const std_msgs::Char::ConstPtr& msg)
      key != 'o' && key != 'q' &&
      key != 'i' && key != 'j' && 
      key != 'k' && key != 'p' && 
-     key != 'n' && key != 'l')
+     key != 'n' && key != 'l' &&
+     key != 'r')
   {
     ROS_INFO("[%c] is not a valid command", key);  
   }
-  else if (key == 'o') 
+    else if (key == 'o') 
   {
     command_queue_.clear();
     command_queue_.push_back(key);
-  }
+  }   
   else if (snake_.is_ready()) // is command that's not stop and snake is ready
-    command_queue_.push_back(key);
+    if (command_queue_.empty()){
+      command_queue_.push_back(key);
+    }
   else
     ROS_INFO("Last command is executing, invalid key press");
+}
+
+
+void SnakeControl::joystick_cb(const sensor_msgs::Joy::ConstPtr &msg) {
+  if (msg->buttons[5] == 1) {
+    char key = 'z';
+    x_joystick_pos = msg->axes[0];
+    y_joystick_pos = msg->axes[1];
+    command_queue_.clear();
+    command_queue_.push_back(key);
+    steering_flag_ = true;
+  } else {
+    x_joystick_pos = 0;
+    y_joystick_pos = 0;
+    if (steering_flag_){
+      command_queue_.clear();
+      steering_flag_ = false;
+      ROS_INFO("Press \"Hold\" on the controller to execute steering");
+    }
+  }
 }
 
 void SnakeControl::init_listener()
 { // init subscriber
   sub_ = nh_.subscribe("gui_commands", 100, &SnakeControl::command_set, this);
-}
-
-void SnakeControl::init_listener() 
-{
-  tension_sub_ = nh_.subscribe("joy", 1, &SnakeControl::command_set, this)
+  joystick_sub_ = nh_.subscribe("joy", 1, &SnakeControl::joystick_cb, this);
 }
 
 void SnakeControl::init_tension_publisher()
@@ -78,25 +96,20 @@ void SnakeControl::publish_snake_mode() {
 
 void SnakeControl::emergency_stop()
 {
-  command_queue_.erase(command_queue_.begin());
-  snake_.stop_all_motor();
+  if (command_queue_.empty()){
+    snake_.stop_all_motor();
+  }
+  else{
+    command_queue_.erase(command_queue_.begin());
+    snake_.stop_all_motor();
+  }
 }
 
 void SnakeControl::demo()
 {
   command_queue_.erase(command_queue_.begin());
 
-for (int i = 0; i < 2; i++)
-{
-  command_queue_.push_back('t'); // Tighten Outer
-  command_queue_.push_back('b'); // Loosen Inner
-  command_queue_.push_back('e'); // Forward Inner
-  command_queue_.push_back('v'); // Tighten Inner
-  command_queue_.push_back('g'); // Loosen Outer
-  command_queue_.push_back('u'); // Forward Outer
-}
-for (int i = 0; i < 4; i++)
-{
+for (int i = 0; i < 1; i++){
   command_queue_.push_back('y'); // Steer Up
   command_queue_.push_back('t'); // Tighten Outer
   command_queue_.push_back('b'); // Loosen Inner
@@ -105,9 +118,9 @@ for (int i = 0; i < 4; i++)
   command_queue_.push_back('g'); // Loosen Outer
   command_queue_.push_back('u'); // Forward Outer
 }
-for (int i = 0; i < 2; i++)
-{
-  command_queue_.push_back('h'); // Steer Down
+
+for (int i = 0; i < 3; i++){
+  command_queue_.push_back('y'); // Steer Up
   command_queue_.push_back('t'); // Tighten Outer
   command_queue_.push_back('b'); // Loosen Inner
   command_queue_.push_back('e'); // Forward Inner
@@ -115,8 +128,8 @@ for (int i = 0; i < 2; i++)
   command_queue_.push_back('g'); // Loosen Outer
   command_queue_.push_back('u'); // Forward Outer
 }
-for (int i = 0; i < 2; i++)
-{
+
+for (int i = 0; i < 3; i++){
   command_queue_.push_back('t'); // Tighten Outer
   command_queue_.push_back('b'); // Loosen Inner
   command_queue_.push_back('e'); // Forward Inner
@@ -124,6 +137,86 @@ for (int i = 0; i < 2; i++)
   command_queue_.push_back('g'); // Loosen Outer
   command_queue_.push_back('u'); // Forward Outer
 }
+
+for (int i = 0; i < 3; i++){
+  command_queue_.push_back('a'); // 
+  command_queue_.push_back('t'); // Tighten Outer
+  command_queue_.push_back('b'); // Loosen Inner
+  command_queue_.push_back('e'); // Forward Inner
+  command_queue_.push_back('v'); // Tighten Inner
+  command_queue_.push_back('g'); // Loosen Outer
+  command_queue_.push_back('u'); // Forward Outer
+}
+
+for (int i = 0; i < 3; i++){
+  command_queue_.push_back('t'); // Tighten Outer
+  command_queue_.push_back('b'); // Loosen Inner
+  command_queue_.push_back('e'); // Forward Inner
+  command_queue_.push_back('v'); // Tighten Inner
+  command_queue_.push_back('g'); // Loosen Outer
+  command_queue_.push_back('u'); // Forward Outer
+}
+
+
+for (int i = 0; i < 3; i++){
+  command_queue_.push_back('d'); // 
+  command_queue_.push_back('t'); // Tighten Outer
+  command_queue_.push_back('b'); // Loosen Inner
+  command_queue_.push_back('e'); // Forward Inner
+  command_queue_.push_back('v'); // Tighten Inner
+  command_queue_.push_back('g'); // Loosen Outer
+  command_queue_.push_back('u'); // Forward Outer
+}
+
+for (int i = 0; i < 3; i++){
+  command_queue_.push_back('t'); // Tighten Outer
+  command_queue_.push_back('b'); // Loosen Inner
+  command_queue_.push_back('e'); // Forward Inner
+  command_queue_.push_back('v'); // Tighten Inner
+  command_queue_.push_back('g'); // Loosen Outer
+  command_queue_.push_back('u'); // Forward Outer
+}
+
+
+// for (int i = 0; i < 2; i++)
+// {
+//   command_queue_.push_back('t'); // Tighten Outer
+//   command_queue_.push_back('b'); // Loosen Inner
+//   command_queue_.push_back('e'); // Forward Inner
+//   command_queue_.push_back('v'); // Tighten Inner
+//   command_queue_.push_back('g'); // Loosen Outer
+//   command_queue_.push_back('u'); // Forward Outer
+// }
+// for (int i = 0; i < 4; i++)
+// {
+//   command_queue_.push_back('y'); // Steer Up
+//   command_queue_.push_back('t'); // Tighten Outer
+//   command_queue_.push_back('b'); // Loosen Inner
+//   command_queue_.push_back('e'); // Forward Inner
+//   command_queue_.push_back('v'); // Tighten Inner
+//   command_queue_.push_back('g'); // Loosen Outer
+//   command_queue_.push_back('u'); // Forward Outer
+// }
+// for (int i = 0; i < 2; i++)
+// {
+//   command_queue_.push_back('h'); // Steer Down
+//   command_queue_.push_back('t'); // Tighten Outer
+//   command_queue_.push_back('b'); // Loosen Inner
+//   command_queue_.push_back('e'); // Forward Inner
+//   command_queue_.push_back('v'); // Tighten Inner
+//   command_queue_.push_back('g'); // Loosen Outer
+//   command_queue_.push_back('u'); // Forward Outer
+// }
+// for (int i = 0; i < 2; i++)
+// {
+//   command_queue_.push_back('t'); // Tighten Outer
+//   command_queue_.push_back('b'); // Loosen Inner
+//   command_queue_.push_back('e'); // Forward Inner
+//   command_queue_.push_back('v'); // Tighten Inner
+//   command_queue_.push_back('g'); // Loosen Outer
+//   command_queue_.push_back('u'); // Forward Outer
+// }
+
 }
 
 void SnakeControl::advance()
@@ -265,16 +358,32 @@ void SnakeControl::loosen_outer_C()
 }
 
 // Steering to custom angle
-void SnakeControl::steer_custom_angle(float x_joystick_pos, float y_joystick_pos)
+void SnakeControl::steer_angle()
 {
-  snake_.steer_angle(x_joystick_pos, y_joystick_pos);
+  snake_.steer_outer(x_joystick_pos,y_joystick_pos);
+  // snake_.steer_angle(x_joystick_pos, y_joystick_pos);
   // Want to steer to live angle, so clearing command queue to avoid delay
-  command_queue.erase(command_queue_.clear());
+  // command_queue_.erase(command_queue_.begin());
 }
+
+// Steering to custom angle
+void SnakeControl::update_steer_angle()
+{
+  snake_.update_steer_angle_goal(x_joystick_pos,y_joystick_pos);
+  // command_queue_.erase(command_queue_.begin());
+}
+
+// void SnakeControl::back_to_ready()
+// {
+//   snake_.back_to_ready();
+//   command_queue_.erase(command_queue_.begin());
+// }
 
 bool SnakeControl::cmd_queue_empty() {return command_queue_.empty();}
 
 char SnakeControl::get_cmd_queue_top() {return command_queue_[0];}
 
 bool SnakeControl::snake_is_ready() {return snake_.is_ready();}
+bool SnakeControl::snake_is_steering() {return snake_.is_steering();}
+
 

@@ -53,6 +53,7 @@ enum modes {
   TIGHTENING, // for commands that uses force control: tighen(inner/outer)
   TIGHTENING_INNER,
   TIGHTENING_OUTER,
+  STEERING,
   HOMING_RAIL,
 };
 
@@ -157,12 +158,33 @@ class MedicalSnake : protected DynamixelController
                                                 std::map<std::string, bool> is_tight);
 
   /**
+   * Steer to angle
+   * 
+   * @param y_joystick_pos the float y position of the joystick
+   * @param x_joystick_pos the float x position of the joystick
+   */
+  void steer_angle(float x_joystick_pos, float y_joystick_pos);
+
+
+  /**
+   * Steer to angle
+   * 
+   * @param y_joystick_pos the float y position of the joystick
+   * @param x_joystick_pos the float x position of the joystick
+   */
+  void steer_outer(float x_joystick_pos, float y_joystick_pos);
+  void update_steer_angle_goal(float x_joystick_pos, float y_joystick_pos);
+
+
+  /**
    * Move every motor in motor_names by a common specified radian
    * 
    * @param motor_names a vector of Dynamixel name as defined in YAML file
    * @param radians radian to move for each motor
    */
   void move_position(const std::vector<std::string> motor_names, float radians);
+
+  void move_position_adjust_velocity(std::map<std::string, float> motor_and_radian);
 
   /**
    * Move each motor in motor_and_radian by the specified radian
@@ -245,6 +267,11 @@ class MedicalSnake : protected DynamixelController
     return medsnake_mode_ == modes::READY;
   }
 
+  /// return whether the snake in in mode steering
+  bool is_steering() {
+    return medsnake_mode_ == modes::STEERING;
+  }
+
   /// return a map from cable names to their tension measure by current 
   /// TODO: change to force sensor value
   std::map<std::string, double> get_tension_fbk();
@@ -254,11 +281,22 @@ class MedicalSnake : protected DynamixelController
 
   double tension_reading(std::string motor_name);
 
+
+
  private:
 
   /// a base velocity that each motor will not exceed, this ensure large delta
   /// in position change can be properly handled
   int32_t max_velocity_; 
+
+  ///
+  int32_t feeding_velocity_;
+
+  /// The constant velocity for velocity control
+  int32_t goal_velocity_;
+
+  int32_t goal_tension_outer_;
+  int32_t goal_tension_inner_;
 
   /// Introduced a timestamp to fix the peak current issue when the motor starts moving
   /// no longer needed with tension sensing
@@ -286,6 +324,10 @@ class MedicalSnake : protected DynamixelController
   std::map<std::string, double> calib_coeff_;
   std::map<std::string, double> calib_offset_;
 
+  std::map<std::string, int32_t> present_steer_center_outer_;
+
+  // float steer_outer_x_;
+  // float steer_outer_y_;
 };
 
 #endif //MEDICAL_SNAKE_H

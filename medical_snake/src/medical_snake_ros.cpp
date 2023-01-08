@@ -208,6 +208,34 @@ int main(int argc, char **argv) {
         control.loosen_outer_C();
       }
 
+
+
+
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'z'
+              && control.snake_is_ready())
+      {
+        ROS_INFO("Steering to angle...");
+        control.steer_angle();
+      }
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'z'
+              && control.snake_is_steering())
+      {
+        ROS_INFO("Steering to angle...");
+        control.update_steer_angle();
+      }
+      else if(control.cmd_queue_empty() && control.snake_is_steering())
+      {
+        ROS_INFO("Switching from steering back to ready ...");
+        control.emergency_stop();
+      }
+
+      // if (control.cmd_queue_empty()){
+      //   std::cout << " control.get_cmd_queue_top() " <<  "EMPTY!" << "\n"; 
+      // }
+      // else{
+      //   std::cout << " control.get_cmd_queue_top() " <<  control.get_cmd_queue_top() << "\n";
+      // }
+
       ros::spinOnce();
     }
 

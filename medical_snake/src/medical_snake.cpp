@@ -1,6 +1,7 @@
 #include <iostream>
 #include "medical_snake.h"
 #include <assert.h>
+#include <math.h>
 
 #define CURRENT_CONTROL_MODE 0
 #define VELOCITY_CONTROL_MODE 1
@@ -51,6 +52,11 @@ void MedicalSnake::initialize(const char* config_path, const char* dxl_config_pa
   bool has_link_length = false;
   bool has_rail_screw_lead = false;
   bool has_max_velocity = false;
+  bool has_goal_velocity = false;
+  bool has_feeding_velocity = false;
+  bool has_goal_tension_inner = false;
+  bool has_goal_tension_outer = false;
+
 
   for (auto it_file = config.begin(); it_file != config.end(); ++it_file)
   {
@@ -60,13 +66,27 @@ void MedicalSnake::initialize(const char* config_path, const char* dxl_config_pa
     if (name == "n_links") has_n_links = true;
     if (name == "link_length") has_link_length = true;
     if (name == "rail_screw_lead") has_rail_screw_lead = true;
-    if (name == "max_velocity")
-    {
+    if (name == "max_velocity"){
       max_velocity_ = it_file->second.as<int32_t>();
       has_max_velocity = true;
     }
-    if (name == "feedback_items")
-    {
+    if (name == "feeding_velocity"){
+      feeding_velocity_ = it_file->second.as<int32_t>();
+      has_feeding_velocity = true;
+    }
+    if (name == "goal_velocity"){
+      goal_velocity_ = it_file->second.as<int32_t>();
+      has_goal_velocity = true;
+    }
+    if (name == "goal_tension_outer"){
+      goal_tension_outer_ = it_file->second.as<int32_t>();
+      has_goal_tension_outer = true;
+    }
+    if (name == "goal_tension_inner"){
+      goal_tension_inner_ = it_file->second.as<int32_t>();
+      has_goal_tension_inner = true;
+    }
+    if (name == "feedback_items"){
       auto extra_items = it_file->second.as<std::vector<std::string>>();
       feedback_items.insert(feedback_items.end(), extra_items.begin(),
                             extra_items.end());
@@ -202,7 +222,10 @@ std::map<std::string, bool> MedicalSnake::check_goal()
       // alternatively, can use "moving" for goal_reached
     }
     break;
-  
+  case modes::STEERING:
+      // For now, leave checking goal empty for steering outer.
+    break;
+
   default:
     throw std::runtime_error("[MedicalSnake::check_goal] Medical snake has no goal under this command mode");
   }
@@ -239,7 +262,7 @@ void MedicalSnake::update()
   std::vector<std::string> goal_to_stop;
 
   // only effective if velocity control mode
-  int32_t goal_vel = 250;
+  // int32_t goal_velocity_ = 250;
   bool all_stop = true;
   std::vector<std::string> all_motor_names;
   std::map<std::string, bool> checked_goal;
@@ -259,6 +282,7 @@ void MedicalSnake::update()
     }
     ideal_speed = get_ideal_speeds(all_motor_names, checked_goal);
   }
+
   for (const std::pair<const std::string, bool> &motor_pair : checked_goal)
   {
     if (!motor_pair.second)
@@ -273,14 +297,22 @@ void MedicalSnake::update()
       // if velocity control mode
       else if (medsnake_mode_ == HOMING_RAIL)
       { 
-        goal_quantity.push_back(goal_vel);
+        goal_quantity.push_back(goal_velocity_);
         all_stop = false;
       }
       else if (medsnake_mode_ == TIGHTENING) 
       {
-        goal_quantity.push_back(int32_t(-goal_vel * ideal_speed[motor_pair.first]));
+        goal_quantity.push_back(int32_t(-goal_velocity_ * ideal_speed[motor_pair.first]));
         all_stop = false;
       }
+      else if (medsnake_mode_ == STEERING)
+      {  
+        // update_steer_angle_goal();
+        goal_quantity.push_back(goals_[motor_pair.first]);
+        // std::cout << "Steering outer, goal position for :" << motor_pair.first<<" is"<< goals_[motor_pair.first] << "\n";
+        all_stop = false;
+      }
+
     }
     else
     { // if a single motor has reached its goal
@@ -316,7 +348,7 @@ void MedicalSnake::update()
     if (!all_stop)
     { 
       // std::cout << duration.count() << " ms~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
-      // std::vector<std::int32_t> vel_goal(goal_to_write.size(), -goal_vel);
+      // std::vector<std::int32_t> vel_goal(goal_to_write.size(), -goal_velocity_);
       sync_write_register(goal_to_write, "Goal_Velocity", goal_quantity);
     }
     else
@@ -339,6 +371,19 @@ void MedicalSnake::update()
       std::cout << "---------------position goal is reached------------------\n";
     }
   }
+  else if (medsnake_mode_ == modes::STEERING)
+  { 
+    if (!goal_to_write.empty())
+    { // if the goal is not reached for all motor
+      sync_write_register(goal_to_write, "Goal_Position", goal_quantity);
+    }
+    // else
+    // { // if the goal is reached for all motors
+    //   set_mode(modes::READY);
+    //   std::cout << "---------------position goal is reached------------------\n";
+    // }
+  }
+
 }
 
 
@@ -453,13 +498,21 @@ void MedicalSnake::move_position(const std::vector<std::string> motor_names, con
 { 
   set_opmode(EXTENDED_POSITION_CONTROL_MODE, motor_names);
   // all motor moves by same radian thus all max_velocity_
-  std::vector<int32_t> profile_vel(motor_names.size(), max_velocity_);
   if(motor_names.size() > 1 || (motor_names[0] == "outer_snake_cable_A" ||
                                 motor_names[0] == "outer_snake_cable_B" ||
                                 motor_names[0] == "outer_snake_cable_C" ))
   { // except for railing, profile velocity is set 
+    std::vector<int32_t> profile_vel(motor_names.size(), max_velocity_);
     set_profile_velocity(motor_names, profile_vel);
   }
+
+  if(motor_names.size() == 1 && (motor_names[0] == "outer_snake_rail" ||
+                                 motor_names[0] == "inner_snake_rail" ))
+  { // set profile velocity for rail
+    std::vector<int32_t> profile_vel(motor_names.size(), feeding_velocity_);
+    set_profile_velocity(motor_names, profile_vel);
+  }
+
   //   set goals
   for (const std::string &name : motor_names)
   {
@@ -471,7 +524,24 @@ void MedicalSnake::move_position(const std::vector<std::string> motor_names, con
 // map version, each motor takes on different delta in radian
 void MedicalSnake::move_position(std::map<std::string, float> motor_and_radian)
 {
+  std::vector<std::string> motor_names;
+  for(const std::pair<const std::string, float> &pair : motor_and_radian){
+    motor_names.push_back(pair.first);
+  }
+  set_opmode(EXTENDED_POSITION_CONTROL_MODE, motor_names);
 
+  move_position_adjust_velocity(motor_and_radian);
+  
+  for(const std::pair<const std::string, float> &pair : motor_and_radian)
+  {
+    int32_t present_position = get_fbk(pair.first, "Present_Position");
+    goals_[pair.first] = present_position + int32_t(radian_to_value(pair.first, pair.second));
+  }
+}
+
+
+void MedicalSnake::move_position_adjust_velocity(std::map<std::string, float> motor_and_radian)
+{
   std::vector<std::string> motor_names;
   std::vector<int32_t> adjusted_velocity;
 
@@ -490,16 +560,10 @@ void MedicalSnake::move_position(std::map<std::string, float> motor_and_radian)
   float factor = max_velocity_ / motor_and_radian[max_motor_name];
   for(const std::pair<const std::string, float> &pair : motor_and_radian)
   {
+    // std::cout <<"!!!!!!!"<< pair.first<< " speed: "<< int32_t(abs(pair.second * factor))<<"\n";
     adjusted_velocity.push_back(int32_t(abs(pair.second * factor)));
   }
-  set_opmode(EXTENDED_POSITION_CONTROL_MODE, motor_names);
   set_profile_velocity(motor_names, adjusted_velocity);
-  
-  for(const std::pair<const std::string, float> &pair : motor_and_radian)
-  {
-    int32_t present_position = get_fbk(pair.first, "Present_Position");
-    goals_[pair.first] = present_position + int32_t(radian_to_value(pair.first, pair.second));
-  }
 }
 
 
@@ -508,8 +572,8 @@ void MedicalSnake::tighten_outer()
   // tighten_command_timestamp_ = std::chrono::high_resolution_clock::now();
   set_mode(modes::TIGHTENING);
   set_opmode(VELOCITY_CONTROL_MODE, outer_snake_cable);
-  goals_ = {{"outer_snake_cable_A", 15}, {"outer_snake_cable_B", 15}, 
-            {"outer_snake_cable_C", 15}}; 
+  goals_ = {{"outer_snake_cable_A", goal_tension_outer_}, {"outer_snake_cable_B", goal_tension_outer_}, 
+            {"outer_snake_cable_C", goal_tension_outer_}}; 
 }
 
 void MedicalSnake::tighten_outer_A()
@@ -554,7 +618,7 @@ void MedicalSnake::tighten_inner()
   set_mode(modes::TIGHTENING);
   set_opmode(VELOCITY_CONTROL_MODE, {"inner_snake_cable"});
   // current goal (force goal)
-  goals_ = {{"inner_snake_cable", 40}};
+  goals_ = {{"inner_snake_cable", goal_tension_inner_}};
 }
 
 
@@ -635,38 +699,113 @@ void MedicalSnake::backward_outer()
 void MedicalSnake::steer_angle(float x, float y) {
   set_mode(modes::MOVING_POSITION);
 
+  x = -x;
+  
   double CR = .0047;
   // Finding phi in radians
-  float phi = y * -.5 * M_PI();
+  float phi = sqrt(pow(x, 2) + pow(y, 2)) * .25 * M_PI;
+
+  if (phi > (M_PI / 6)) {
+    phi = M_PI / 6;
+  } 
+
   // Finding theta in radians
-  float theta = atan2(y, x);
+  float theta = atan2(y, x) - M_PI*.5;
+  float L = .0085;
+  float r = .0047;
 
-  float A = sqrt(4 * pow(CR, 2) * pow(cos(theta), 2) * pow(sin(phi/2), 2)) / (M_PI * pow(.01, 2));
-  float B = sqrt(-pow(CR, 2)*(-2 + cos(theta) + sqrt(3) * sin(2 * theta)) * pow(sin(.5 * phi, 2))  / (M_PI * .01 * 2);
-  float C = sqrt(pow(CR, 2) * (2 - cos(2 * theta) + sqrt(3) * sin(2*theta)) * pow(sin(.5 * phi), 2))  / (M_PI * .01 * 2);
-  
-  if (theta>=0)&&theta<(M_PI*.5)) {
-    C = -C;
-  } else if (theta>(M_PI*.5)&&theta<M_PI) {
-    B = -B;
-  } else if (theta>M_PI&&theta<(M_PI*1.5)) {
-    B = -B;
-    A = -A;
-  } else if (theta>(M_PI*1.5)&&theta<(2*M_PI)) {
-    C = -C;
-    A = -A;
-  } else if (theta == (M_PI * .5)) {
-    B = -B;
-    C = -C;
-  } else if (theta == (M_PI*1.5)) {
-    A = -A;
-  };
+  float A = (sqrt(2*pow(r, 2)*pow(cos(theta), 2)*(1-cos(phi)) + 2 * L * r * cos(theta) * sin(phi) + pow(L, 2)) - L) / .01;
 
+  float B = (sqrt(pow((r/2 - r/2 * (cos(phi) * pow(cos(theta), 2) + pow(sin(theta), 2)) - L * cos(theta) * sin(phi) + sqrt(3) / 2 * r * (cos(theta) * sin(theta) * (1 - cos(phi)))) , 2)    
+            + pow((r/2 * cos(theta) * sin(phi) - L * cos(phi) + sqrt(3) / 2 * r * sin(phi) * sin(theta)), 2) 
+            + pow(sqrt(3) / 2 * r + r / 2 * (cos(theta) * sin(theta) * (1 - cos(phi))) - sqrt(3) / 2 * r * (pow(cos(theta), 2) + cos(phi) * pow(sin(theta), 2)) - L * sin(phi) * sin(theta) , 2)) - L) / .01;
+
+  float C = (sqrt(pow((-r/2 + r/2 * (cos(phi) * pow(cos(theta), 2) + pow(sin(theta), 2)) + L * cos(theta) * sin(phi) + sqrt(3) / 2 * r * (cos(theta) * sin(theta) * (1 - cos(phi)))) , 2)    
+            + pow((-r/2 * cos(theta) * sin(phi) + L * cos(phi) + sqrt(3) / 2 * r * sin(phi) * sin(theta)), 2) 
+            + pow(sqrt(3) / 2 * r - r / 2 * (cos(theta) * sin(theta) * (1 - cos(phi))) - sqrt(3) / 2 * r * (pow(cos(theta), 2) + cos(phi) * pow(sin(theta), 2)) + L * sin(phi) * sin(theta), 2)) - L) / .01;
+
+  std::cout << "[x,y]: [" << x << "," << y <<"]"<<"\n";
+  std::cout << "theta " << theta << "\n";
+  std::cout << "A:" << A << "; B:" << B << "; C: " << C << '\n';
+  // std::cout << "The goal angle is " << theta << "\n";
   move_position({{"outer_snake_cable_A", A}, 
                  {"outer_snake_cable_B", B}, 
                  {"outer_snake_cable_C", C}});
   print_goal();
+
 }
+
+
+
+
+void MedicalSnake::steer_outer(float x, float y) {
+  set_mode(modes::STEERING);
+  std::vector<std::string> motor_names = {"outer_snake_cable_A","outer_snake_cable_B","outer_snake_cable_C"};
+  set_opmode(EXTENDED_POSITION_CONTROL_MODE, motor_names);
+  std::vector<int32_t> profile_vel(motor_names.size(), max_velocity_);
+  set_profile_velocity(motor_names, profile_vel);
+  
+  //   set goals
+  for (const std::string &name : motor_names)
+  {
+    if (!present_steer_center_outer_.count(name)) {
+      present_steer_center_outer_.insert({name, get_fbk(name, "Present_Position")});
+    }
+    else{
+      present_steer_center_outer_[name] = get_fbk(name, "Present_Position");
+    }
+  }
+
+  // update_steer_angle_goal(x, y);
+
+}
+
+void MedicalSnake::update_steer_angle_goal(float x, float y) {
+  // float x = steer_outer_x_;
+  // float y = steer_outer_y_;
+
+  x = -x;  
+  double CR = .0047;
+  // Finding phi in radians
+  float phi = sqrt(pow(x, 2) + pow(y, 2)) * .25 * M_PI;
+
+  if (phi > (M_PI / 6)) {
+    phi = M_PI / 6;
+  } 
+
+  // Finding theta in radians
+  float theta = atan2(y, x) - M_PI*.5;
+  float L = .0085;
+  float r = .0047;
+
+  float A = (sqrt(2*pow(r, 2)*pow(cos(theta), 2)*(1-cos(phi)) + 2 * L * r * cos(theta) * sin(phi) + pow(L, 2)) - L) / .01;
+
+  float B = (sqrt(pow((r/2 - r/2 * (cos(phi) * pow(cos(theta), 2) + pow(sin(theta), 2)) - L * cos(theta) * sin(phi) + sqrt(3) / 2 * r * (cos(theta) * sin(theta) * (1 - cos(phi)))) , 2)    
+            + pow((r/2 * cos(theta) * sin(phi) - L * cos(phi) + sqrt(3) / 2 * r * sin(phi) * sin(theta)), 2) 
+            + pow(sqrt(3) / 2 * r + r / 2 * (cos(theta) * sin(theta) * (1 - cos(phi))) - sqrt(3) / 2 * r * (pow(cos(theta), 2) + cos(phi) * pow(sin(theta), 2)) - L * sin(phi) * sin(theta) , 2)) - L) / .01;
+
+  float C = (sqrt(pow((-r/2 + r/2 * (cos(phi) * pow(cos(theta), 2) + pow(sin(theta), 2)) + L * cos(theta) * sin(phi) + sqrt(3) / 2 * r * (cos(theta) * sin(theta) * (1 - cos(phi)))) , 2)    
+            + pow((-r/2 * cos(theta) * sin(phi) + L * cos(phi) + sqrt(3) / 2 * r * sin(phi) * sin(theta)), 2) 
+            + pow(sqrt(3) / 2 * r - r / 2 * (cos(theta) * sin(theta) * (1 - cos(phi))) - sqrt(3) / 2 * r * (pow(cos(theta), 2) + cos(phi) * pow(sin(theta), 2)) + L * sin(phi) * sin(theta), 2)) - L) / .01;
+
+  std::cout << "[x,y]: [" << x << "," << y <<"]"<<"\n";
+  std::cout << "theta " << theta << "\n";
+  std::cout << "A:" << A << "; B:" << B << "; C: " << C << '\n';
+  std::cout << "The goal angle is " << theta << "\n";
+
+  int32_t goal_A = radian_to_value("outer_snake_cable_A",A) + present_steer_center_outer_["outer_snake_cable_A"];
+  int32_t goal_B = radian_to_value("outer_snake_cable_B",B) + present_steer_center_outer_["outer_snake_cable_B"];
+  int32_t goal_C = radian_to_value("outer_snake_cable_C",C) + present_steer_center_outer_["outer_snake_cable_C"];
+
+  goals_ = {{"outer_snake_cable_A", goal_A}, 
+            {"outer_snake_cable_B", goal_B}, 
+            {"outer_snake_cable_C", goal_C}};
+  // move_position_adjust_velocity({{"outer_snake_cable_A", goal_A}, 
+  //                                {"outer_snake_cable_B", goal_B}, 
+  //                                {"outer_snake_cable_C", goal_C}}); 
+
+}
+
 
 void MedicalSnake::steer_left()
 { // TODO(Maggie): Change the value by experiment if necessary
