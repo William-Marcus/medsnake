@@ -110,7 +110,6 @@ void SnakeControl::demo()
   command_queue_.erase(command_queue_.begin());
 
 for (int i = 0; i < 1; i++){
-  command_queue_.push_back('y'); // Steer Up
   command_queue_.push_back('t'); // Tighten Outer
   command_queue_.push_back('b'); // Loosen Inner
   command_queue_.push_back('e'); // Forward Inner
@@ -148,7 +147,8 @@ for (int i = 0; i < 3; i++){
   command_queue_.push_back('u'); // Forward Outer
 }
 
-for (int i = 0; i < 3; i++){
+for (int i = 0; i < 2; i++){
+  command_queue_.push_back('y'); // 
   command_queue_.push_back('t'); // Tighten Outer
   command_queue_.push_back('b'); // Loosen Inner
   command_queue_.push_back('e'); // Forward Inner
@@ -158,8 +158,8 @@ for (int i = 0; i < 3; i++){
 }
 
 
-for (int i = 0; i < 3; i++){
-  command_queue_.push_back('d'); // 
+for (int i = 0; i < 2; i++){
+  command_queue_.push_back('y'); // 
   command_queue_.push_back('t'); // Tighten Outer
   command_queue_.push_back('b'); // Loosen Inner
   command_queue_.push_back('e'); // Forward Inner
@@ -168,7 +168,7 @@ for (int i = 0; i < 3; i++){
   command_queue_.push_back('u'); // Forward Outer
 }
 
-for (int i = 0; i < 3; i++){
+for (int i = 0; i < 2; i++){
   command_queue_.push_back('t'); // Tighten Outer
   command_queue_.push_back('b'); // Loosen Inner
   command_queue_.push_back('e'); // Forward Inner
@@ -176,7 +176,6 @@ for (int i = 0; i < 3; i++){
   command_queue_.push_back('g'); // Loosen Outer
   command_queue_.push_back('u'); // Forward Outer
 }
-
 
 // for (int i = 0; i < 2; i++)
 // {
