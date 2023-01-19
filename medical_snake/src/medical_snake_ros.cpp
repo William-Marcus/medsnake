@@ -26,39 +26,39 @@ int main(int argc, char **argv) {
       // joint_publisher.send_msg();
       
 
-      if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'o')
+      if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "stop")
       {
         ROS_INFO("Stop!");
         control.emergency_stop();
 
       }
 
-      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'x')
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "fwd_both")
       {
         control.forward_both();
       }
-      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'f')
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "back_both")
       {
         control.backward_both();
       }
-      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'q')
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "demo")
       {
         control.demo();
       }
       // Advance
-      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'w')
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "advance")
       {
         control.advance();
       }
 
       // Retract
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 's')
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "retract")
       {
         control.retract();
       }
 
       // Steer Left
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'a'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "steer_left"
               && control.snake_is_ready())
       {
         ROS_INFO("Steering Left ...");
@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
       }
 
       // Steer Right
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'd'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "steer_right"
               && control.snake_is_ready())
       {
         ROS_INFO("Steer Right ...");
@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
       }
 
       // Steer Up
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'y'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "steer_up"
               && control.snake_is_ready())
       {
         ROS_INFO("Steering Up ...");
@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
       }
 
       // Steer Down
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'h'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "steer_down"
               && control.snake_is_ready())
       {
         ROS_INFO("Steer Down ...");
@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
       }
 
       // Tighten Outer
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 't'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "tight_outer"
               && control.snake_is_ready())
       {
         ROS_INFO("Tighten Outer ...");
@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
       }
 
       // Loosen Outer
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'g'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "loose_outer"
               && control.snake_is_ready())
       {
         ROS_INFO("Loosen Outer ...");
@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
       }
 
       // Tighten Inner
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'v'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "tight_inner"
               && control.snake_is_ready())
       {
         ROS_INFO("Tighten Inner ...");
@@ -118,7 +118,7 @@ int main(int argc, char **argv) {
       }
 
       // Loosen Inner
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'b'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "loose_inner"
               && control.snake_is_ready())
       {
         ROS_INFO("Loosen Inner ...");
@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
       }
 
       // Forward Inner
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'e'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "fwd_inner"
               && control.snake_is_ready())
       {
         ROS_INFO("Forward Inner ...");
@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
       }
 
       // Backward Inner
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'c'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "back_inner"
               && control.snake_is_ready())
       {
         ROS_INFO("Backward Inner ...");
@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
       }
 
       // Forward Outer
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'u'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "fwd_outer"
               && control.snake_is_ready())
       {
         ROS_INFO("Forward Outer ...");
@@ -153,7 +153,7 @@ int main(int argc, char **argv) {
       }
 
       // Backward Outer
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'm'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "back_outer"
               && control.snake_is_ready())
       {
         ROS_INFO("Backward Outer ...");
@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
       }
 
       // Home Rail
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'r'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "home_rail"
               && control.snake_is_ready())
       {
         ROS_INFO("Homing Rail ...");
@@ -170,7 +170,7 @@ int main(int argc, char **argv) {
       }
 
       // Home
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == ','
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "homing"
               && control.snake_is_ready())
       {
         ROS_INFO("Homing the Entire Snake ...");
@@ -178,7 +178,7 @@ int main(int argc, char **argv) {
       }
 
       // Tighten Outer Snake Cable A
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'i'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "tight_outer_A"
               && control.snake_is_ready())
       {
         ROS_INFO("Tightening Outer Snake Cable A ...");
@@ -186,7 +186,7 @@ int main(int argc, char **argv) {
       }
 
       // Tighten Outer Snake Cable B
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'k'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "tight_outer_B"
               && control.snake_is_ready())
       {
         ROS_INFO("Tightening Outer Snake Cable B ...");
@@ -194,7 +194,7 @@ int main(int argc, char **argv) {
       }
 
       // Tighten Outer Snake Cable C
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'j'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "tight_outer_C"
               && control.snake_is_ready())
       {
         ROS_INFO("Tightening Outer Snake Cable C ...");
@@ -202,7 +202,7 @@ int main(int argc, char **argv) {
       }
 
       // Loosen Outer Snake Cable A
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'p'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "loose_outer_A"
               && control.snake_is_ready())
       {
         ROS_INFO("Loosening Outer Snake Cable A ...");
@@ -210,7 +210,7 @@ int main(int argc, char **argv) {
       }
 
       // Loosen Outer Snake Cable B
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'l'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "loose_outer_B"
               && control.snake_is_ready())
       {
         ROS_INFO("Loosening Outer Snake Cable B ...");
@@ -218,7 +218,7 @@ int main(int argc, char **argv) {
       }
 
       // Loosen Outer Snake Cable C
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'n'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "loose_outer_C"
               && control.snake_is_ready())
       {
         ROS_INFO("Loosening Outer Snake Cable C ...");
@@ -228,13 +228,13 @@ int main(int argc, char **argv) {
 
 
 
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'z'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "steer"
               && control.snake_is_ready())
       {
         ROS_INFO("Steering to angle...");
         control.steer_angle();
       }
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'z'
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "steer"
               && control.snake_is_steering())
       {
         ROS_INFO("Steering to angle...");

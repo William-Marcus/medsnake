@@ -6,6 +6,7 @@
  */
 
 #include <string>
+#include <sstream>
 #include <ros/ros.h>
 #include "std_msgs/Char.h"
 #include "std_msgs/String.h"
@@ -14,7 +15,6 @@
 #include "medical_snake.h"
 #include <std_msgs/Bool.h>
 #include <geometry_msgs/Vector3Stamped.h>
-
 
 
 class SnakeControl
@@ -28,7 +28,7 @@ class SnakeControl
   /// initialize the snake
   void snake_initialize(const char* config_path, const char* dxl_config_path);
   
-  void command_set(const std_msgs::Char::ConstPtr& msg);
+  void command_set(const std_msgs::String::ConstPtr& msg);
   
   void backward_both();
 
@@ -92,12 +92,12 @@ class SnakeControl
 
   void loosen_outer_C();
 
-  bool cmd_queue_empty();
+  bool cmd_queue_empty(){return command_queue_.empty();};
 
-  char get_cmd_queue_top();
+  std::string get_cmd_queue_top(){return command_queue_[0];};
 
-  bool snake_is_ready();
-  bool snake_is_steering();
+  bool snake_is_ready(){return snake_.is_ready();};
+  bool snake_is_steering() {return snake_.is_steering();};
 
   void steer_angle();
   void update_steer_angle();
@@ -111,7 +111,7 @@ class SnakeControl
   ros::Publisher mode_pub_;
   ros::NodeHandle nh_;
   ros::Subscriber joystick_sub_;
-  std::vector<char> command_queue_;
+  std::vector<std::string> command_queue_;
   std::map<std::string, double> tension_dic_;
   float x_joystick_pos, y_joystick_pos;
   bool steering_flag_=false;

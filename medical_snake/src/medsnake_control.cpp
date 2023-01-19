@@ -7,28 +7,42 @@ SnakeControl::SnakeControl(const char* port_name, const char* config_path, const
   snake_.initialize(config_path, dxl_config_path);
 };
 
-void SnakeControl::command_set(const std_msgs::Char::ConstPtr& msg)
+void SnakeControl::command_set(const std_msgs::String::ConstPtr& msg)
 { // callback function
-  ROS_INFO("key pressed: [%c]", char(msg->data));
-  char key = msg->data;
+  ROS_INFO("key pressed: [%s]", msg->data.c_str());
+  std::string key = msg->data;
 
-  if(key != 'w' && key != 's' && 
-     key != 'a' && key != 'd' && 
-     key != 'y' && key != 'h' && 
-     key != 't' && key != 'g' && 
-     key != 'v' && key != 'b' && 
-     key != 'e' && key != 'c' && 
-     key != 'u' && key != 'm' && 
-     key != 'o' && key != 'q' &&
-     key != 'i' && key != 'j' && 
-     key != 'k' && key != 'p' && 
-     key != 'n' && key != 'l' &&
-     key != 'r' && key != 'x' && 
-     key != 'f' && key != ',')
+  // if(key != 'w' && key != 's' && 
+  //    key != 'a' && key != 'd' && 
+  //    key != 'y' && key != 'h' && 
+  //    key != 't' && key != 'g' && 
+  //    key != 'v' && key != 'b' && 
+  //    key != 'e' && key != 'c' && 
+  //    key != 'u' && key != 'm' && 
+  //    key != 'o' && key != 'q' &&
+  //    key != 'i' && key != 'j' && 
+  //    key != 'k' && key != 'p' && 
+  //    key != 'n' && key != 'l' &&
+  //    key != 'r' && key != 'x' && 
+  //    key != 'f' && key != ',')
+
+  if(key != "fwd_both" && key != "back_both" && 
+     key != "steer_left" && key != "steer_right" && 
+     key != "steer_up" && key != "steer_down" && 
+     key != "tight_outer" && key != "loose_outer" && 
+     key != "tight_inner" && key != "loose_inner" && 
+     key != "advance" && key != "retract" && 
+     key != "stop" && key != "demo" && 
+     key != "homing" && key != "tight_outer_A" &&
+     key != "tight_outer_B" && key != "tight_outer_C" && 
+     key != "loose_outer_A" && key != "loose_outer_B" && 
+     key != "loose_outer_C" && key != "fwd_outer" &&
+     key != "back_outer" && key != "fwd_inner" && 
+     key != "back_inner" && key != "home_rail")
   {
-    ROS_INFO("[%c] is not a valid command", key);  
+    ROS_INFO("[%s] is not a valid command", key.c_str());  
   }
-    else if (key == 'o') 
+    else if (key == "stop") 
   {
     command_queue_.clear();
     command_queue_.push_back(key);
@@ -44,7 +58,7 @@ void SnakeControl::command_set(const std_msgs::Char::ConstPtr& msg)
 
 void SnakeControl::joystick_cb(const sensor_msgs::Joy::ConstPtr &msg) {
   if (msg->buttons[5] == 1) {
-    char key = 'z';
+    std::string key = "steer";
     x_joystick_pos = msg->axes[0];
     y_joystick_pos = msg->axes[1];
     command_queue_.clear();
@@ -111,71 +125,71 @@ void SnakeControl::demo()
   command_queue_.erase(command_queue_.begin());
 
 for (int i = 0; i < 1; i++){
-  command_queue_.push_back('t'); // Tighten Outer
-  command_queue_.push_back('b'); // Loosen Inner
-  command_queue_.push_back('e'); // Forward Inner
-  command_queue_.push_back('v'); // Tighten Inner
-  command_queue_.push_back('g'); // Loosen Outer
-  command_queue_.push_back('u'); // Forward Outer
+  command_queue_.push_back("tight_outer"); // Tighten Outer
+  command_queue_.push_back("loose_inner"); // Loosen Inner
+  command_queue_.push_back("fwd_inner"); // Forward Inner
+  command_queue_.push_back("tight_inner"); // Tighten Inner
+  command_queue_.push_back("loose_outer"); // Loosen Outer
+  command_queue_.push_back("fwd_outer"); // Forward Outer
 }
 
 for (int i = 0; i < 5; i++){
-  command_queue_.push_back('y'); // Steer Up
-  command_queue_.push_back('t'); // Tighten Outer
-  command_queue_.push_back('b'); // Loosen Inner
-  command_queue_.push_back('e'); // Forward Inner
-  command_queue_.push_back('v'); // Tighten Inner
-  command_queue_.push_back('g'); // Loosen Outer
-  command_queue_.push_back('u'); // Forward Outer
+  command_queue_.push_back("steer_up"); // Steer Up
+  command_queue_.push_back("tight_outer"); // Tighten Outer
+  command_queue_.push_back("loose_inner"); // Loosen Inner
+  command_queue_.push_back("fwd_inner"); // Forward Inner
+  command_queue_.push_back("tight_inner"); // Tighten Inner
+  command_queue_.push_back("loose_outer"); // Loosen Outer
+  command_queue_.push_back("fwd_outer"); // Forward Outer
 }
 
 for (int i = 0; i < 1; i++){
-  command_queue_.push_back('t'); // Tighten Outer
-  command_queue_.push_back('b'); // Loosen Inner
-  command_queue_.push_back('e'); // Forward Inner
-  command_queue_.push_back('v'); // Tighten Inner
-  command_queue_.push_back('g'); // Loosen Outer
-  command_queue_.push_back('u'); // Forward Outer
+  command_queue_.push_back("tight_outer"); // Tighten Outer
+  command_queue_.push_back("loose_inner"); // Loosen Inner
+  command_queue_.push_back("fwd_inner"); // Forward Inner
+  command_queue_.push_back("tight_inner"); // Tighten Inner
+  command_queue_.push_back("loose_outer"); // Loosen Outer
+  command_queue_.push_back("fwd_outer"); // Forward Outer
 }
 
 for (int i = 0; i < 3; i++){
-  command_queue_.push_back('a'); // 
-  command_queue_.push_back('t'); // Tighten Outer
-  command_queue_.push_back('b'); // Loosen Inner
-  command_queue_.push_back('e'); // Forward Inner
-  command_queue_.push_back('v'); // Tighten Inner
-  command_queue_.push_back('g'); // Loosen Outer
-  command_queue_.push_back('u'); // Forward Outer
+  command_queue_.push_back("steer_left"); // steer left
+  command_queue_.push_back("tight_outer"); // Tighten Outer
+  command_queue_.push_back("loose_inner"); // Loosen Inner
+  command_queue_.push_back("fwd_inner"); // Forward Inner
+  command_queue_.push_back("tight_inner"); // Tighten Inner
+  command_queue_.push_back("loose_outer"); // Loosen Outer
+  command_queue_.push_back("fwd_outer"); // Forward Outer
 }
 
 for (int i = 0; i < 2; i++){
-  command_queue_.push_back('y'); // 
-  command_queue_.push_back('t'); // Tighten Outer
-  command_queue_.push_back('b'); // Loosen Inner
-  command_queue_.push_back('e'); // Forward Inner
-  command_queue_.push_back('v'); // Tighten Inner
-  command_queue_.push_back('g'); // Loosen Outer
-  command_queue_.push_back('u'); // Forward Outer
+  command_queue_.push_back("steer_up"); // 
+  command_queue_.push_back("tight_outer"); // Tighten Outer
+  command_queue_.push_back("loose_inner"); // Loosen Inner
+  command_queue_.push_back("fwd_inner"); // Forward Inner
+  command_queue_.push_back("tight_inner"); // Tighten Inner
+  command_queue_.push_back("loose_outer"); // Loosen Outer
+  command_queue_.push_back("fwd_outer"); // Forward Outer
 }
 
 
 for (int i = 0; i < 2; i++){
-  command_queue_.push_back('y'); // 
-  command_queue_.push_back('t'); // Tighten Outer
-  command_queue_.push_back('b'); // Loosen Inner
-  command_queue_.push_back('e'); // Forward Inner
-  command_queue_.push_back('v'); // Tighten Inner
-  command_queue_.push_back('g'); // Loosen Outer
-  command_queue_.push_back('u'); // Forward Outer
+  command_queue_.push_back("steer_up"); // 
+  command_queue_.push_back("tight_outer"); // Tighten Outer
+  command_queue_.push_back("loose_inner"); // Loosen Inner
+  command_queue_.push_back("fwd_inner"); // Forward Inner
+  command_queue_.push_back("tight_inner"); // Tighten Inner
+  command_queue_.push_back("loose_outer"); // Loosen Outer
+  command_queue_.push_back("fwd_outer"); // Forward Outer
 }
 
 for (int i = 0; i < 2; i++){
-  command_queue_.push_back('t'); // Tighten Outer
-  command_queue_.push_back('b'); // Loosen Inner
-  command_queue_.push_back('e'); // Forward Inner
-  command_queue_.push_back('v'); // Tighten Inner
-  command_queue_.push_back('g'); // Loosen Outer
-  command_queue_.push_back('u'); // Forward Outer
+  command_queue_.push_back("tight_outer"); // Tighten Outer
+  command_queue_.push_back("loose_inner"); // Loosen Inner
+  command_queue_.push_back("fwd_inner"); // Forward Inner
+  command_queue_.push_back("tight_inner"); // Tighten Inner
+  command_queue_.push_back("loose_outer"); // Loosen Outer
+  command_queue_.push_back("fwd_outer"); // Forward Outer
 }
 
 
@@ -254,24 +268,24 @@ void SnakeControl::advance()
 {
   command_queue_.erase(command_queue_.begin());
   // command_queue_.clear();
-  command_queue_.push_back('t'); // Tighten Outer
-  command_queue_.push_back('b'); // Loosen Inner
-  command_queue_.push_back('e'); // Forward Inner
-  command_queue_.push_back('v'); // Tighten Inner
-  command_queue_.push_back('g'); // Loosen Outer
-  command_queue_.push_back('u'); // Forward Outer
+  command_queue_.push_back("tight_outer"); // Tighten Outer
+  command_queue_.push_back("loose_inner"); // Loosen Inner
+  command_queue_.push_back("fwd_inner"); // Forward Inner
+  command_queue_.push_back("tight_inner"); // Tighten Inner
+  command_queue_.push_back("loose_outer"); // Loosen Outer
+  command_queue_.push_back("fwd_outer"); // Forward Outer
 }
 
 void SnakeControl::retract()
 {
   command_queue_.erase(command_queue_.begin());
   // command_queue_.clear();
-  command_queue_.push_back('t'); // Tighten Outer
-  command_queue_.push_back('b'); // Loosen Inner
-  command_queue_.push_back('c'); // Backward Inner
-  command_queue_.push_back('v'); // Tighten Inner
-  command_queue_.push_back('g'); // Loosen Outer
-  command_queue_.push_back('m'); // Backward Outer
+  command_queue_.push_back("tight_outer"); // Tighten Outer
+  command_queue_.push_back("loose_inner"); // Loosen Inner
+  command_queue_.push_back("fwd_inner"); // Forward Inner
+  command_queue_.push_back("tight_inner"); // Tighten Inner
+  command_queue_.push_back("loose_outer"); // Loosen Outer
+  command_queue_.push_back("fwd_outer"); // Forward Outer
 }
 
 void SnakeControl::backward_both()
@@ -367,9 +381,9 @@ void SnakeControl::home_rail()
 void SnakeControl::home()
 {
   command_queue_.erase(command_queue_.begin());
-  command_queue_.push_back('b'); // Loosen Inner
-  command_queue_.push_back('g'); // Loosen Outer
-  command_queue_.push_back('r'); // Loosen Outer
+  command_queue_.push_back("loose_inner"); // Loosen Inner
+  command_queue_.push_back("loose_outer"); // Loosen Outer
+  command_queue_.push_back("home_rail"); // home rail
 }
 
 void SnakeControl::tighten_outer_A()
@@ -430,11 +444,11 @@ void SnakeControl::update_steer_angle()
 //   command_queue_.erase(command_queue_.begin());
 // }
 
-bool SnakeControl::cmd_queue_empty() {return command_queue_.empty();}
+// bool SnakeControl::cmd_queue_empty() {return command_queue_.empty();}
 
-char SnakeControl::get_cmd_queue_top() {return command_queue_[0];}
+// string SnakeControl::get_cmd_queue_top() {return command_queue_[0];}
 
-bool SnakeControl::snake_is_ready() {return snake_.is_ready();}
-bool SnakeControl::snake_is_steering() {return snake_.is_steering();}
+// bool SnakeControl::snake_is_ready() {return snake_.is_ready();}
+// bool SnakeControl::snake_is_steering() {return snake_.is_steering();}
 
 

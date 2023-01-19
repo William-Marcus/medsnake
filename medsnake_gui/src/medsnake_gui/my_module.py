@@ -134,7 +134,7 @@ class MyPlugin(Plugin):
         
         
         # Set up a publisher for the gui_commands
-        self.pub_ = rospy.Publisher('/gui_commands', Char, queue_size=1)
+        self.pub_ = rospy.Publisher('/gui_commands', String, queue_size=1)
         self.rate = rospy.Rate(10)
 
         # This line is establishing the subscriber for the medsnake mode, passed as a string to snake_mode_define function
@@ -257,136 +257,136 @@ class MyPlugin(Plugin):
     #     print("ESTOP CLICKED")
     #     # data = 000000000000000000000000
     #     # self.pub_.publish(data)
-    
-    # Steering event handle
-    def handle_left_clicked(self):
-        data = 97 # a
-        # rospy.loginfo(chr(data))
-        self.pub_.publish(data)
-        
+
     def handle_fwd_both_clicked(self):
-        data = 120 # x
+        data = 'fwd_both' # x
         self.pub_.publish(data)
         
     def handle_back_both_clicked(self):
-        data = 102 # f
+        data = 'back_both' # f
         self.pub_.publish(data)
-        
+
+    # Steering event handle
+    def handle_left_clicked(self):
+        data = 'steer_left' # a
+        # rospy.loginfo(chr(data))
+        self.pub_.publish(data)
+               
     def handle_right_clicked(self):
-        data = 100 # d
+        data = 'steer_right' # d
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
         
     def handle_up_clicked(self):
-        data = 121 # y
+        data = 'steer_up' # y
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
     
     def handle_down_clicked(self):
-        data = 104 # h
+        data = 'steer_down' # h
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
     
     # Outer snake event handle
     def handle_tighten_outer_clicked(self):
-        data = 116 # t
+        data = 'tight_outer' # t
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
         
     def handle_loosen_outer_clicked(self):
-        data = 103 # g
+        data = 'loose_outer' # g
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
 
     # Outer snake event handle
     def handle_tighten_inner_clicked(self):
-        data = 118 # v
+        data = 'tight_inner' # v
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
         
     def handle_loosen_inner_clicked(self):
-        data = 98 # b
+        data = 'loose_inner' # b
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
         
     # Advance and retract event handle
     def handle_advance_clicked(self):
-        data = 119 # w
+        data = 'advance' # w
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
         
     def handle_retract_clicked(self):
-        data = 115 # s
+        data = 'retract' # s
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
         
     # Stop and demo event handle
     def handle_stop_clicked(self):
-        data = 111 # o
+        data = 'stop' # o
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
         
     def handle_demo_clicked(self):
-        data = 113 # q
+        data = 'demo' # q
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
         
           
     def handle_homing_clicked(self):
-        data = 44 # ,
+        data = 'homing' # ,
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
                 
     
     # Individual outer cable event handle
     def handle_tighten_outer_A_clicked(self):
-        data = 105 # i
+        data = 'tight_outer_A' # i
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
 
     def handle_tighten_outer_B_clicked(self):
-        data = 107 # k
+        data = 'tight_outer_B' # k
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
         
     def handle_tighten_outer_C_clicked(self):
-        data = 106 # j
+        data = 'tight_outer_C' # j
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
 
     def handle_loosen_outer_A_clicked(self):
-        data = 112 # p
+        data = 'loose_outer_A' # p
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
         
     def handle_loosen_outer_B_clicked(self):
-        data = 108 # l  
+        data = 'loose_outer_B' # l  
         self.pub_.publish(data)
 
         
     def handle_loosen_outer_C_clicked(self):
-        data = 110 # n
+        data = 'loose_outer_C' # n
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
         
     # Railing event handle
     def handle_forward_outer_clicked(self):
-        data = 117 # u
+        data = 'fwd_outer' # u
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
         
     def handle_backward_outer_clicked(self):
-        data = 109 # m
+        data = 'back_outer' # m
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
 
     def handle_forward_inner_clicked(self):
-        data = 101 # e
+        data = 'fwd_inner' # e
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
         
     def handle_backward_inner_clicked(self):
-        data = 99 # c
+        data = 'back_inner' # c
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
     
