@@ -56,6 +56,20 @@ void CommandJointStatePublisher::forward_outer()
 {
   position_[1] += 0.00923;
   follow_lead();
+
+// void CommandJointStatePublisher::forward_both()
+// {
+//   position[1] += .00923;
+//   position[0] += .00923;
+// }
+
+// void CommandJointStatePublisher::backward_both()
+// {
+//   position[0] -= .00923;
+//   position[1] -= .00923;
+// }
+
+
 }
 void CommandJointStatePublisher::backward_inner()
 {

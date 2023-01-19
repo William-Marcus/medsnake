@@ -32,6 +32,15 @@ int main(int argc, char **argv) {
         control.emergency_stop();
 
       }
+
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'x')
+      {
+        control.forward_both();
+      }
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'f')
+      {
+        control.backward_both();
+      }
       else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == 'q')
       {
         control.demo();
@@ -158,6 +167,14 @@ int main(int argc, char **argv) {
       {
         ROS_INFO("Homing Rail ...");
         control.home_rail();
+      }
+
+      // Home
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == ','
+              && control.snake_is_ready())
+      {
+        ROS_INFO("Homing the Entire Snake ...");
+        control.home();
       }
 
       // Tighten Outer Snake Cable A

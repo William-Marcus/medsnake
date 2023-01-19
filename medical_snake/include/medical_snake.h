@@ -50,9 +50,18 @@ enum modes {
   READY,
   MOVING_POSITION, // for all commands that uses position control: 
   // loosen(inner/outer), steering, forward(inner/outer), backward(inner/outer)
-  TIGHTENING, // for commands that uses force control: tighen(inner/outer)
-  TIGHTENING_INNER,
+  LOOSENING_CABLE,
+  TIGHTENING_CABLE,
+  MOVING_FORWARD,
+  MOVING_BACKWARD,
+  MOVING_INNER,
+  MOVING_OUTER,
+  TIGHTENING, 
+  DEMO,
   TIGHTENING_OUTER,
+  TIGHTENING_INNER,
+  LOOSENING_OUTER,
+  LOOSENING_INNER,
   STEERING,
   HOMING_RAIL,
 };
@@ -113,6 +122,12 @@ class MedicalSnake : protected DynamixelController
 
    /// Forward outer snake
   void forward_outer();
+
+  /// Forward both snakes simultaneously
+  void forward_both();
+
+  /// Backward both snakes simultaneously
+  void backward_both();
 
   /// Backward inner snake
   void backward_inner();
@@ -285,17 +300,21 @@ class MedicalSnake : protected DynamixelController
 
  private:
 
-  /// a base velocity that each motor will not exceed, this ensure large delta
+  /// A base velocity that each motor will not exceed, this ensure large delta
   /// in position change can be properly handled
-  int32_t max_velocity_; 
+  int32_t max_cable_velocity_; 
 
-  ///
+  /// The rotation velocity of the lead screw, which determines the feeding 
+  /// velocity of the rail 
   int32_t feeding_velocity_;
 
   /// The constant velocity for velocity control
   int32_t goal_velocity_;
 
+  /// The goal tendon tension for the outer snake when tightening
   int32_t goal_tension_outer_;
+
+  /// The goal tendon tension for the inner snake when tightening
   int32_t goal_tension_inner_;
 
   /// Introduced a timestamp to fix the peak current issue when the motor starts moving
@@ -321,13 +340,15 @@ class MedicalSnake : protected DynamixelController
   /// smoothed current
   std::map<std::string, int32_t> smooth_current_;
 
+  /// calibration coefficient of the load cell sensor
   std::map<std::string, double> calib_coeff_;
+
+  /// calibration offset of the load cell sensor
   std::map<std::string, double> calib_offset_;
 
+  /// the steering center position of the outer cables
   std::map<std::string, int32_t> present_steer_center_outer_;
 
-  // float steer_outer_x_;
-  // float steer_outer_y_;
 };
 
 #endif //MEDICAL_SNAKE_H

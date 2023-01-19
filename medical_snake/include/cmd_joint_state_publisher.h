@@ -54,6 +54,13 @@ class CommandJointStatePublisher
   
   /// Issue unfollow leader joint state message
   void unfollow_lead();
+
+  // Issue both forward joint state message
+  void backward_both();
+
+  // Issue both backward joint state message
+  void forward_both();
+
   
 
 

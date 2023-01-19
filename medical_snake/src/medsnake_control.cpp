@@ -23,7 +23,8 @@ void SnakeControl::command_set(const std_msgs::Char::ConstPtr& msg)
      key != 'i' && key != 'j' && 
      key != 'k' && key != 'p' && 
      key != 'n' && key != 'l' &&
-     key != 'r')
+     key != 'r' && key != 'x' && 
+     key != 'f' && key != ',')
   {
     ROS_INFO("[%c] is not a valid command", key);  
   }
@@ -118,7 +119,7 @@ for (int i = 0; i < 1; i++){
   command_queue_.push_back('u'); // Forward Outer
 }
 
-for (int i = 0; i < 3; i++){
+for (int i = 0; i < 5; i++){
   command_queue_.push_back('y'); // Steer Up
   command_queue_.push_back('t'); // Tighten Outer
   command_queue_.push_back('b'); // Loosen Inner
@@ -128,7 +129,7 @@ for (int i = 0; i < 3; i++){
   command_queue_.push_back('u'); // Forward Outer
 }
 
-for (int i = 0; i < 3; i++){
+for (int i = 0; i < 1; i++){
   command_queue_.push_back('t'); // Tighten Outer
   command_queue_.push_back('b'); // Loosen Inner
   command_queue_.push_back('e'); // Forward Inner
@@ -177,17 +178,8 @@ for (int i = 0; i < 2; i++){
   command_queue_.push_back('u'); // Forward Outer
 }
 
-// for (int i = 0; i < 2; i++)
-// {
-//   command_queue_.push_back('t'); // Tighten Outer
-//   command_queue_.push_back('b'); // Loosen Inner
-//   command_queue_.push_back('e'); // Forward Inner
-//   command_queue_.push_back('v'); // Tighten Inner
-//   command_queue_.push_back('g'); // Loosen Outer
-//   command_queue_.push_back('u'); // Forward Outer
-// }
-// for (int i = 0; i < 4; i++)
-// {
+
+// for (int i = 0; i < 1; i++){
 //   command_queue_.push_back('y'); // Steer Up
 //   command_queue_.push_back('t'); // Tighten Outer
 //   command_queue_.push_back('b'); // Loosen Inner
@@ -196,9 +188,9 @@ for (int i = 0; i < 2; i++){
 //   command_queue_.push_back('g'); // Loosen Outer
 //   command_queue_.push_back('u'); // Forward Outer
 // }
-// for (int i = 0; i < 2; i++)
-// {
-//   command_queue_.push_back('h'); // Steer Down
+
+// for (int i = 0; i < 3; i++){
+//   command_queue_.push_back('y'); // Steer Up
 //   command_queue_.push_back('t'); // Tighten Outer
 //   command_queue_.push_back('b'); // Loosen Inner
 //   command_queue_.push_back('e'); // Forward Inner
@@ -206,8 +198,8 @@ for (int i = 0; i < 2; i++){
 //   command_queue_.push_back('g'); // Loosen Outer
 //   command_queue_.push_back('u'); // Forward Outer
 // }
-// for (int i = 0; i < 2; i++)
-// {
+
+// for (int i = 0; i < 3; i++){
 //   command_queue_.push_back('t'); // Tighten Outer
 //   command_queue_.push_back('b'); // Loosen Inner
 //   command_queue_.push_back('e'); // Forward Inner
@@ -215,6 +207,46 @@ for (int i = 0; i < 2; i++){
 //   command_queue_.push_back('g'); // Loosen Outer
 //   command_queue_.push_back('u'); // Forward Outer
 // }
+
+// for (int i = 0; i < 3; i++){
+//   command_queue_.push_back('a'); // 
+//   command_queue_.push_back('t'); // Tighten Outer
+//   command_queue_.push_back('b'); // Loosen Inner
+//   command_queue_.push_back('e'); // Forward Inner
+//   command_queue_.push_back('v'); // Tighten Inner
+//   command_queue_.push_back('g'); // Loosen Outer
+//   command_queue_.push_back('u'); // Forward Outer
+// }
+
+// for (int i = 0; i < 3; i++){
+//   command_queue_.push_back('t'); // Tighten Outer
+//   command_queue_.push_back('b'); // Loosen Inner
+//   command_queue_.push_back('e'); // Forward Inner
+//   command_queue_.push_back('v'); // Tighten Inner
+//   command_queue_.push_back('g'); // Loosen Outer
+//   command_queue_.push_back('u'); // Forward Outer
+// }
+
+
+// for (int i = 0; i < 3; i++){
+//   command_queue_.push_back('d'); // 
+//   command_queue_.push_back('t'); // Tighten Outer
+//   command_queue_.push_back('b'); // Loosen Inner
+//   command_queue_.push_back('e'); // Forward Inner
+//   command_queue_.push_back('v'); // Tighten Inner
+//   command_queue_.push_back('g'); // Loosen Outer
+//   command_queue_.push_back('u'); // Forward Outer
+// }
+
+// for (int i = 0; i < 3; i++){
+//   command_queue_.push_back('t'); // Tighten Outer
+//   command_queue_.push_back('b'); // Loosen Inner
+//   command_queue_.push_back('e'); // Forward Inner
+//   command_queue_.push_back('v'); // Tighten Inner
+//   command_queue_.push_back('g'); // Loosen Outer
+//   command_queue_.push_back('u'); // Forward Outer
+// }
+
 
 }
 
@@ -240,6 +272,18 @@ void SnakeControl::retract()
   command_queue_.push_back('v'); // Tighten Inner
   command_queue_.push_back('g'); // Loosen Outer
   command_queue_.push_back('m'); // Backward Outer
+}
+
+void SnakeControl::backward_both()
+{
+  snake_.backward_both();
+  command_queue_.erase(command_queue_.begin());
+}
+
+void SnakeControl::forward_both()
+{
+  snake_.forward_both();
+  command_queue_.erase(command_queue_.begin());
 }
 
 void SnakeControl::steer_left()
@@ -318,6 +362,14 @@ void SnakeControl::home_rail()
 {
   snake_.home_rail();
   command_queue_.erase(command_queue_.begin());
+}
+
+void SnakeControl::home()
+{
+  command_queue_.erase(command_queue_.begin());
+  command_queue_.push_back('b'); // Loosen Inner
+  command_queue_.push_back('g'); // Loosen Outer
+  command_queue_.push_back('r'); // Loosen Outer
 }
 
 void SnakeControl::tighten_outer_A()

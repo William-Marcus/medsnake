@@ -125,7 +125,13 @@ class MyPlugin(Plugin):
         
         # Demo
         self._widget.demo.clicked[bool].connect(self.handle_demo_clicked)
+        
+        self._widget.backward_both.clicked[bool].connect(self.handle_back_both_clicked)
+        self._widget.forward_both.clicked[bool].connect(self.handle_fwd_both_clicked)
 
+        # Stop
+        self._widget.stop.clicked[bool].connect(self.handle_stop_clicked)
+        
         
         # Set up a publisher for the gui_commands
         self.pub_ = rospy.Publisher('/gui_commands', Char, queue_size=1)
@@ -247,10 +253,23 @@ class MyPlugin(Plugin):
         # This will enable a setting button (gear icon) in each dock widget title bar
         # Usually used to open a modal configuration dialog
     
+    # def estop_clicked(self):
+    #     print("ESTOP CLICKED")
+    #     # data = 000000000000000000000000
+    #     # self.pub_.publish(data)
+    
     # Steering event handle
     def handle_left_clicked(self):
         data = 97 # a
         # rospy.loginfo(chr(data))
+        self.pub_.publish(data)
+        
+    def handle_fwd_both_clicked(self):
+        data = 120 # x
+        self.pub_.publish(data)
+        
+    def handle_back_both_clicked(self):
+        data = 102 # f
         self.pub_.publish(data)
         
     def handle_right_clicked(self):
@@ -314,7 +333,7 @@ class MyPlugin(Plugin):
         
           
     def handle_homing_clicked(self):
-        data = 114 # r
+        data = 44 # ,
         # rospy.loginfo(chr(data))
         self.pub_.publish(data)
                 

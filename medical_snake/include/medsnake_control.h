@@ -30,6 +30,10 @@ class SnakeControl
   
   void command_set(const std_msgs::Char::ConstPtr& msg);
   
+  void backward_both();
+
+  void forward_both();
+
   void init_listener();
 
   void init_tension_publisher();
@@ -73,6 +77,8 @@ class SnakeControl
   void backward_outer();
 
   void home_rail();
+
+  void home();
 
   void tighten_outer_A();
 
