@@ -56,14 +56,16 @@ enum modes {
   MOVING_BACKWARD,
   MOVING_INNER,
   MOVING_OUTER,
-  TIGHTENING, 
-  DEMO,
+  TIGHTENING,
   TIGHTENING_OUTER,
   TIGHTENING_INNER,
   LOOSENING_OUTER,
   LOOSENING_INNER,
   STEERING,
   HOMING_RAIL,
+  COMPLIANT_INSERTION,
+  ERROR,
+  DEMO,
 };
 
 class MedicalSnake : protected DynamixelController
@@ -123,11 +125,53 @@ class MedicalSnake : protected DynamixelController
    /// Forward outer snake
   void forward_outer();
 
+  // forwarding both snakes continously
+  void forward_both_cont();
+
+  // backing up both snakes continously
+  void backward_both_cont();
+
+  void forward_inner_cont();
+
+  void forward_outer_cont();
+
+  void backward_inner_cont();
+
+  void forward_both_cont_compliant_insertion();
+
+  void steer_angle_compliant_insertion(float x, float y);
+
+  void backward_outer_cont();
+
+  void loosen_inner_cont();
+
+  void tighten_outer_A_cont();
+
+  void tighten_outer_B_cont();
+
+  void tighten_outer_C_cont();
+
+  void loosen_outer_cont();
+
+  // loosen individual outer snake cable
+  void loosen_outer_A_cont();
+
+  void loosen_outer_B_cont();
+
+  void loosen_outer_C_cont();
+
+  std::map<std::string, bool> check_goal();
+
+  void tighten_outer_cont();
+
+  void tighten_inner_cont();
+
   /// Forward both snakes simultaneously
   void forward_both();
-
-  /// Backward both snakes simultaneously
+  
   void backward_both();
+
+  /// Backward both snakes simultaneously  
 
   /// Backward inner snake
   void backward_inner();
@@ -155,10 +199,8 @@ class MedicalSnake : protected DynamixelController
   void update();
 
   /// check if the goal set by command function is reached, return a map of 
-  /// whether the goal is reached for each Dynamixel
-  std::map<std::string, bool> check_goal();
+  /// whether the goal is reached for each Dyn  158 |   void loosen_inner_cont();
 
-  /// stop all moving motor
   void stop_moving_motor();
 
   void stop_all_motor();
@@ -296,6 +338,8 @@ class MedicalSnake : protected DynamixelController
 
   double tension_reading(std::string motor_name);
 
+  /// return a map from cable names to their position,
+  std::map<std::string, int64_t> get_motor_position_fbk();
 
 
  private:

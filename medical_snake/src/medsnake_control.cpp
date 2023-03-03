@@ -38,7 +38,15 @@ void SnakeControl::command_set(const std_msgs::String::ConstPtr& msg)
      key != "loose_outer_A" && key != "loose_outer_B" && 
      key != "loose_outer_C" && key != "fwd_outer" &&
      key != "back_outer" && key != "fwd_inner" && 
-     key != "back_inner" && key != "home_rail")
+     key != "back_inner" && key != "home_rail" &&
+     key != "fwd_both_cont" && key != "back_both_cont" &&
+     key != "fwd_inner_cont" && key != "fwd_outer_cont" &&
+     key != "back_inner_cont" && key != "back_outer_cont" &&
+     key != "inner_tension_cont" && key != "outer_a_tension_cont" &&
+     key != "outer_b_tension_cont" && key != "outer_c_tension_cont" &&
+     key != "inner_loosen_cont" && key != "outer_a_loosen_cont" &&
+     key != "outer_b_loosen_cont" && key != "outer_c_loosen_cont" &&
+     key != "outer_tension_cont" && key != "outer_loosen_cont")
   {
     ROS_INFO("[%s] is not a valid command", key.c_str());  
   }
@@ -57,7 +65,21 @@ void SnakeControl::command_set(const std_msgs::String::ConstPtr& msg)
 
 
 void SnakeControl::joystick_cb(const sensor_msgs::Joy::ConstPtr &msg) {
-  if (msg->buttons[5] == 1) {
+  if (msg->buttons[7] == 1) {
+    std::string key = "steer";
+    x_joystick_pos = msg->axes[0];
+    y_joystick_pos = msg->axes[1];
+    command_queue_.clear();
+    command_queue_.push_back(key);
+    snake_.tighten_outer();
+    snake_.tighten_inner();
+    snake_.loosen_outer();
+    snake_.forward_outer();
+    snake_.forward_outer();
+    snake_.forward_outer();
+    snake_.forward_both_cont_compliant_insertion();
+    snake_.steer_angle_compliant_insertion(msg->axes[0], msg->axes[1]);
+  } else if (msg->buttons[5] == 1) {
     std::string key = "steer";
     x_joystick_pos = msg->axes[0];
     y_joystick_pos = msg->axes[1];
@@ -84,6 +106,7 @@ void SnakeControl::init_listener()
 void SnakeControl::init_tension_publisher()
 {
   pub_ = nh_.advertise<medical_snake::Tension_readings>("tension_readings", 1);
+  position_pub_ = nh_.advertise<medical_snake::Motor_positions>("motor_positions", 1);
   mode_pub_ = nh_.advertise<std_msgs::String>("medsnake_mode", 1);
 }
 
@@ -101,6 +124,19 @@ void SnakeControl::publish_tension_reading()
   tension_msg.outer_snake_cable_C = tension_dic_["outer_snake_cable_C"];
 
   pub_.publish(tension_msg);
+}
+
+void SnakeControl::publish_motor_position()
+{
+  motor_position_dic_ = snake_.get_motor_position_fbk();
+
+  medical_snake::Motor_positions motor_msg;
+  motor_msg.header.stamp = ros::Time::now();
+  float inner_temp = motor_position_dic_["inner_snake_rail"];
+  motor_msg.inner_snake_motor = motor_position_dic_["inner_snake_rail"];
+  motor_msg.outer_snake_motor = motor_position_dic_["outer_snake_rail"];
+
+  position_pub_.publish(motor_msg);
 }
 
 void SnakeControl::publish_snake_mode() {
@@ -282,10 +318,71 @@ void SnakeControl::retract()
   // command_queue_.clear();
   command_queue_.push_back("tight_outer"); // Tighten Outer
   command_queue_.push_back("loose_inner"); // Loosen Inner
-  command_queue_.push_back("fwd_inner"); // Forward Inner
+  command_queue_.push_back("back_inner"); // Forward Inner
   command_queue_.push_back("tight_inner"); // Tighten Inner
   command_queue_.push_back("loose_outer"); // Loosen Outer
-  command_queue_.push_back("fwd_outer"); // Forward Outer
+  command_queue_.push_back("back_outer"); // Forward Outer
+}
+
+void SnakeControl::loosen_inner_cont()
+{
+  snake_.loosen_inner_cont();
+  command_queue_.erase(command_queue_.begin());
+}
+
+void SnakeControl::tighten_outer_A_cont()
+{
+  snake_.tighten_outer_A_cont();
+  command_queue_.erase(command_queue_.begin());
+}
+
+void SnakeControl::tighten_outer_B_cont()
+{
+  snake_.tighten_outer_B_cont();
+  command_queue_.erase(command_queue_.begin());
+}
+
+void SnakeControl::tighten_outer_C_cont()
+{
+  snake_.tighten_outer_C_cont();
+  command_queue_.erase(command_queue_.begin());
+}
+
+void SnakeControl::loosen_outer_cont()
+{
+  snake_.loosen_outer_cont();
+  command_queue_.erase(command_queue_.begin());
+}
+
+// loosen individual outer snake cable
+void SnakeControl::loosen_outer_A_cont()
+{
+  snake_.loosen_outer_A_cont();
+  command_queue_.erase(command_queue_.begin());
+}
+
+void SnakeControl::loosen_outer_B_cont()
+{
+  snake_.loosen_outer_B_cont();
+  command_queue_.erase(command_queue_.begin());
+}
+
+void SnakeControl::loosen_outer_C_cont()
+{
+  snake_.loosen_outer_C_cont();
+  command_queue_.erase(command_queue_.begin());
+}
+
+void SnakeControl::tighten_inner_cont()
+{
+  snake_.tighten_inner_cont();
+  command_queue_.erase(command_queue_.begin());
+}
+
+void SnakeControl::tighten_outer_cont()
+{
+  snake_.tighten_outer_cont();
+  command_queue_.erase(command_queue_.begin());
 }
 
 void SnakeControl::backward_both()
@@ -297,6 +394,42 @@ void SnakeControl::backward_both()
 void SnakeControl::forward_both()
 {
   snake_.forward_both();
+  command_queue_.erase(command_queue_.begin());
+}
+
+void SnakeControl::forward_both_cont()
+{
+  snake_.forward_both_cont();
+  command_queue_.erase(command_queue_.begin());
+}
+
+void SnakeControl::backward_both_cont()
+{
+  snake_.backward_both_cont();
+  command_queue_.erase(command_queue_.begin());
+}
+
+void SnakeControl::forward_inner_cont()
+{
+  snake_.forward_inner_cont();
+  command_queue_.erase(command_queue_.begin());
+}
+
+void SnakeControl::backward_inner_cont()
+{
+  snake_.backward_inner_cont();
+  command_queue_.erase(command_queue_.begin());
+}
+
+void SnakeControl::forward_outer_cont()
+{
+  snake_.forward_outer_cont();
+  command_queue_.erase(command_queue_.begin());
+}
+
+void SnakeControl::backward_outer_cont()
+{
+  snake_.backward_outer_cont();
   command_queue_.erase(command_queue_.begin());
 }
 

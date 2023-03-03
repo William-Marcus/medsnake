@@ -61,6 +61,9 @@ class CommandJointStatePublisher
   // Issue both backward joint state message
   void forward_both();
 
+  // Issue both backward joint state message
+  void forward_both_cont();
+
   
 
 

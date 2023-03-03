@@ -19,7 +19,7 @@ feeding_velocity: 2600 # 2600 is the upper limit
 
 goal_velocity: 250
 
-goal_tension_inner: 70
+goal_tension_inner: 60
 goal_tension_outer: 5
 
 current_offset:

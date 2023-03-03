@@ -22,6 +22,7 @@ int main(int argc, char **argv) {
     {
       control.snake_update(); // snake update: check goal and write to register
       control.publish_tension_reading();
+      control.publish_motor_position();
       control.publish_snake_mode();
       // joint_publisher.send_msg();
       
@@ -33,26 +34,91 @@ int main(int argc, char **argv) {
 
       }
 
-      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "fwd_both")
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "inner_tension_cont" && control.snake_is_ready())
+      {
+        control.tighten_inner_cont();
+      }
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "outer_a_tension_cont" && control.snake_is_ready())
+      {
+        control.tighten_outer_A_cont();
+      }
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "outer_b_tension_cont" && control.snake_is_ready())
+      {
+        control.tighten_outer_B_cont();
+      }
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "outer_c_tension_cont" && control.snake_is_ready())
+      {
+        control.tighten_outer_C_cont();
+      }
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "inner_loosen_cont" && control.snake_is_ready())
+      {
+        control.loosen_inner_cont();
+      }
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "outer_a_loosen_cont" && control.snake_is_ready())
+      {
+        control.loosen_outer_A_cont();
+      }
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "outer_b_loosen_cont" && control.snake_is_ready())
+      {
+        control.loosen_outer_B_cont();
+      }
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "outer_c_loosen_cont" && control.snake_is_ready())
+      {
+        control.loosen_outer_C_cont();
+      }
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "outer_tension_cont" && control.snake_is_ready())
+      {
+        control.tighten_outer_cont();
+      }
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "outer_loosen_cont" && control.snake_is_ready())
+      {
+        control.loosen_outer_cont();
+      }
+      //------------------------------------------------------------------------------------------
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "fwd_both" && control.snake_is_ready())
       {
         control.forward_both();
       }
-      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "back_both")
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "fwd_both_cont" && control.snake_is_ready())
+      {
+        control.forward_both_cont();
+      }
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "back_both_cont" && control.snake_is_ready())
+      {
+        control.backward_both_cont();
+      }
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "back_both" && control.snake_is_ready())
       {
         control.backward_both();
       }
-      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "demo")
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "back_outer_cont" && control.snake_is_ready())
+      {
+        control.backward_outer_cont();
+      }
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "fwd_outer_cont" && control.snake_is_ready())
+      {
+        control.forward_outer_cont();
+      }
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "back_inner_cont" && control.snake_is_ready())
+      {
+        control.backward_inner_cont();
+      }
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "fwd_inner_cont" && control.snake_is_ready())
+      {
+        control.forward_inner_cont();
+      }
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "demo" && control.snake_is_ready())
       {
         control.demo();
       }
       // Advance
-      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "advance")
+      else if (!control.cmd_queue_empty() && control.get_cmd_queue_top() == "advance" && control.snake_is_ready())
       {
         control.advance();
       }
 
       // Retract
-      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "retract")
+      else if(!control.cmd_queue_empty() && control.get_cmd_queue_top() == "retract" && control.snake_is_ready())
       {
         control.retract();
       }

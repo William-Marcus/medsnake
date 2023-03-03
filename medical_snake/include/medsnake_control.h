@@ -12,6 +12,7 @@
 #include "std_msgs/String.h"
 #include <sensor_msgs/Joy.h>
 #include "medical_snake/Tension_readings.h"
+#include "medical_snake/Motor_positions.h"
 #include "medical_snake.h"
 #include <std_msgs/Bool.h>
 #include <geometry_msgs/Vector3Stamped.h>
@@ -92,6 +93,45 @@ class SnakeControl
 
   void loosen_outer_C();
 
+  void forward_both_cont();
+
+  void backward_both_cont();
+
+
+  void forward_inner_cont();
+
+  void backward_inner_cont();
+
+  void forward_outer_cont();
+
+  void backward_outer_cont();
+
+  void publish_motor_position();
+
+  void tighten_outer_A_cont();
+
+  void tighten_outer_B_cont();
+
+  void tighten_outer_C_cont();
+
+  void loosen_outer_cont();
+
+  // loosen individual outer snake cable
+  void loosen_outer_A_cont();
+
+  void loosen_outer_B_cont();
+
+  void loosen_outer_C_cont();
+
+  void loosen_inner_cont();
+
+  void tighten_inner_cont();
+
+  void tighten_outer_cont();
+
+
+
+
   bool cmd_queue_empty(){return command_queue_.empty();};
 
   std::string get_cmd_queue_top(){return command_queue_[0];};
@@ -109,10 +149,13 @@ class SnakeControl
   ros::Subscriber sub_;
   ros::Publisher pub_;
   ros::Publisher mode_pub_;
+  ros::Publisher position_pub_;
   ros::NodeHandle nh_;
   ros::Subscriber joystick_sub_;
   std::vector<std::string> command_queue_;
   std::map<std::string, double> tension_dic_;
+  std::map<std::string, int64_t> motor_position_dic_;
+
   float x_joystick_pos, y_joystick_pos;
   bool steering_flag_=false;
 };
