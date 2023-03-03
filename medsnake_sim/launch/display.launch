@@ -1,7 +1,7 @@
 <launch>
 
   <arg name="model" default="$(find medsnake_description)/urdf/medsnake.xacro"/>
-  <arg name="gui" default="true" />
+  <arg name="gui" default="false" />
   <arg name="rvizconfig" default="$(find medsnake_sim)/rviz/medsnake_sim.rviz" />
 
   <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />

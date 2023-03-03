@@ -9,20 +9,34 @@
 // Reminder message
 const char* reminder = R"(
  
-Medsnake Control Command by Key Press
+Medsnake Control Command by Key Press (Last updated 01/13/2023)
 ---------------------------
-w: Advance
-s: Retract
-a: Steer Left
-d: Steer Right
-y: Steer Up
-h: Steer Down
-t: Tighten Outer
-g: Loosen Outer
-v: Tighten Inner
-b: Loosen Inner
-q: Demo
-o: Emergency Stop
+a : steer left
+b : loosen inner
+c : back inner
+d : steer right
+e : forward inner
+f : backward both
+g : loosen outer
+h : steer down
+i : tighten A
+j : tighten C
+k : tighten B
+l : loosen B
+m : backward outer
+n : loosen C
+o : stop
+p : loosen A
+q : demo
+r : homing
+s : retract
+t : tighter outer
+u : forward outer
+v : tighten inner
+w : advance
+x : **open for use**
+y : steer up
+z : steer angle
  
 CTRL-C to quit
  

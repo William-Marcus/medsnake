@@ -92,6 +92,7 @@ if(catkin_FOUND)
 	add_message_files(
 		FILES
 		Tension_readings.msg
+		Motor_positions.msg
 		)
 	generate_messages(
 		DEPENDENCIES

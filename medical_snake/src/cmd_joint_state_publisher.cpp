@@ -21,6 +21,7 @@ void CommandJointStatePublisher::init_command_joint_state_publisher()
 
 void CommandJointStatePublisher::send_msg(const sensor_msgs::JointState::ConstPtr& msg)
 {
+  // The subscriber only copies the header file for to the joint_state to publish 
   sensor_msgs::JointState joint_msg;
   joint_msg.header = msg->header;
   joint_msg.name = name_;

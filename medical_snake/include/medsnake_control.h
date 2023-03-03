@@ -6,12 +6,16 @@
  */
 
 #include <string>
+#include <sstream>
 #include <ros/ros.h>
 #include "std_msgs/Char.h"
 #include "std_msgs/String.h"
+#include <sensor_msgs/Joy.h>
 #include "medical_snake/Tension_readings.h"
+#include "medical_snake/Motor_positions.h"
 #include "medical_snake.h"
-
+#include <std_msgs/Bool.h>
+#include <geometry_msgs/Vector3Stamped.h>
 
 
 class MedsnakeControl
@@ -25,8 +29,12 @@ class MedsnakeControl
   /// initialize the snake
   void snake_initialize(const char* config_path, const char* dxl_config_path);
   
-  void command_set(const std_msgs::Char::ConstPtr& msg);
+  void command_set(const std_msgs::String::ConstPtr& msg);
   
+  void backward_both();
+
+  void forward_both();
+
   void init_listener();
 
   void init_tension_publisher();
@@ -71,6 +79,8 @@ class MedsnakeControl
 
   void home_rail();
 
+  void home();
+
   void tighten_outer_A();
 
   void tighten_outer_B();
@@ -83,21 +93,69 @@ class MedsnakeControl
 
   void loosen_outer_C();
 
-  void tension_control_inner();
+  void forward_both_cont();
+
+  void backward_both_cont();
 
 
-  bool cmd_queue_empty();
+  void forward_inner_cont();
 
-  char get_cmd_queue_top();
+  void backward_inner_cont();
 
-  bool snake_is_ready();
+  void forward_outer_cont();
+
+  void backward_outer_cont();
+
+  void publish_motor_position();
+
+  void tighten_outer_A_cont();
+
+  void tighten_outer_B_cont();
+
+  void tighten_outer_C_cont();
+
+  void loosen_outer_cont();
+
+  // loosen individual outer snake cable
+  void loosen_outer_A_cont();
+
+  void loosen_outer_B_cont();
+
+  void loosen_outer_C_cont();
+
+  void loosen_inner_cont();
+
+  void tighten_inner_cont();
+
+  void tighten_outer_cont();
+
+
+
+
+  bool cmd_queue_empty(){return command_queue_.empty();};
+
+  std::string get_cmd_queue_top(){return command_queue_[0];};
+
+  bool snake_is_ready(){return snake_.is_ready();};
+  bool snake_is_steering() {return snake_.is_steering();};
+
+  void steer_angle();
+  void update_steer_angle();
+
+  void joystick_cb(const sensor_msgs::Joy::ConstPtr &msg);
 
  private:
   MedicalSnake snake_;
   ros::Subscriber command_sub_;
   ros::Publisher tension_pub_;
   ros::Publisher mode_pub_;
+  ros::Publisher position_pub_;
   ros::NodeHandle nh_;
-  std::vector<char> command_queue_;
+  ros::Subscriber joystick_sub_;
+  std::vector<std::string> command_queue_;
   std::map<std::string, double> tension_dic_;
+  std::map<std::string, int64_t> motor_position_dic_;
+
+  float x_joystick_pos, y_joystick_pos;
+  bool steering_flag_=false;
 };

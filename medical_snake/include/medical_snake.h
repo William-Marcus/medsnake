@@ -50,11 +50,22 @@ enum modes {
   READY,
   MOVING_POSITION, // for all commands that uses position control: 
   // loosen(inner/outer), steering, forward(inner/outer), backward(inner/outer)
-  TIGHTENING, // for commands that uses force control: tighen(inner/outer)
-  TIGHTENING_INNER,
+  LOOSENING_CABLE,
+  TIGHTENING_CABLE,
+  MOVING_FORWARD,
+  MOVING_BACKWARD,
+  MOVING_INNER,
+  MOVING_OUTER,
+  TIGHTENING,
   TIGHTENING_OUTER,
-  TENSIONCONTROL_INNER,
+  TIGHTENING_INNER,
+  LOOSENING_OUTER,
+  LOOSENING_INNER,
+  STEERING,
   HOMING_RAIL,
+  COMPLIANT_INSERTION,
+  ERROR,
+  DEMO,
 };
 
 class MedicalSnake : protected DynamixelController
@@ -114,6 +125,54 @@ class MedicalSnake : protected DynamixelController
    /// Forward outer snake
   void forward_outer();
 
+  // forwarding both snakes continously
+  void forward_both_cont();
+
+  // backing up both snakes continously
+  void backward_both_cont();
+
+  void forward_inner_cont();
+
+  void forward_outer_cont();
+
+  void backward_inner_cont();
+
+  void forward_both_cont_compliant_insertion();
+
+  void steer_angle_compliant_insertion(float x, float y);
+
+  void backward_outer_cont();
+
+  void loosen_inner_cont();
+
+  void tighten_outer_A_cont();
+
+  void tighten_outer_B_cont();
+
+  void tighten_outer_C_cont();
+
+  void loosen_outer_cont();
+
+  // loosen individual outer snake cable
+  void loosen_outer_A_cont();
+
+  void loosen_outer_B_cont();
+
+  void loosen_outer_C_cont();
+
+  std::map<std::string, bool> check_goal();
+
+  void tighten_outer_cont();
+
+  void tighten_inner_cont();
+
+  /// Forward both snakes simultaneously
+  void forward_both();
+  
+  void backward_both();
+
+  /// Backward both snakes simultaneously  
+
   /// Backward inner snake
   void backward_inner();
 
@@ -135,28 +194,13 @@ class MedicalSnake : protected DynamixelController
   /// Homing rail
   void home_rail();
 
-
-  /// Velocity based tension controller for the inner snake 
-  /// based on the tension sensing feedback.
-  void tension_control_inner();
-
-  /// Continously updating the tension goals for tension controller of
-  /// the inner snake.
-  void update_inner_tension_goals();
-
-  /// To update the tension goals as input.
-  void update_tension_control_goals(std::vector<std::string> motor_names);
-
-
   /// Perform goal checking for current executing command function and 
   /// write register while the goal is not reached
   void update();
 
   /// check if the goal set by command function is reached, return a map of 
-  /// whether the goal is reached for each Dynamixel
-  std::map<std::string, bool> check_goal();
+  /// whether the goal is reached for each Dyn  158 |   void loosen_inner_cont();
 
-  /// stop all moving motor
   void stop_moving_motor();
 
   void stop_all_motor();
@@ -171,12 +215,33 @@ class MedicalSnake : protected DynamixelController
                                                 std::map<std::string, bool> is_tight);
 
   /**
+   * Steer to angle
+   * 
+   * @param y_joystick_pos the float y position of the joystick
+   * @param x_joystick_pos the float x position of the joystick
+   */
+  void steer_angle(float x_joystick_pos, float y_joystick_pos);
+
+
+  /**
+   * Steer to angle
+   * 
+   * @param y_joystick_pos the float y position of the joystick
+   * @param x_joystick_pos the float x position of the joystick
+   */
+  void steer_outer(float x_joystick_pos, float y_joystick_pos);
+  void update_steer_angle_goal(float x_joystick_pos, float y_joystick_pos);
+
+
+  /**
    * Move every motor in motor_names by a common specified radian
    * 
    * @param motor_names a vector of Dynamixel name as defined in YAML file
    * @param radians radian to move for each motor
    */
   void move_position(const std::vector<std::string> motor_names, float radians);
+
+  void move_position_adjust_velocity(std::map<std::string, float> motor_and_radian);
 
   /**
    * Move each motor in motor_and_radian by the specified radian
@@ -259,6 +324,11 @@ class MedicalSnake : protected DynamixelController
     return medsnake_mode_ == modes::READY;
   }
 
+  /// return whether the snake in in mode steering
+  bool is_steering() {
+    return medsnake_mode_ == modes::STEERING;
+  }
+
   /// return a map from cable names to their tension measure by current 
   /// TODO: change to force sensor value
   std::map<std::string, double> get_tension_fbk();
@@ -268,11 +338,28 @@ class MedicalSnake : protected DynamixelController
 
   double tension_reading(std::string motor_name);
 
+  /// return a map from cable names to their position,
+  std::map<std::string, int64_t> get_motor_position_fbk();
+
+
  private:
 
-  /// a base velocity that each motor will not exceed, this ensure large delta
+  /// A base velocity that each motor will not exceed, this ensure large delta
   /// in position change can be properly handled
-  int32_t max_velocity_; 
+  int32_t max_cable_velocity_; 
+
+  /// The rotation velocity of the lead screw, which determines the feeding 
+  /// velocity of the rail 
+  int32_t feeding_velocity_;
+
+  /// The constant velocity for velocity control
+  int32_t goal_velocity_;
+
+  /// The goal tendon tension for the outer snake when tightening
+  int32_t goal_tension_outer_;
+
+  /// The goal tendon tension for the inner snake when tightening
+  int32_t goal_tension_inner_;
 
   /// Introduced a timestamp to fix the peak current issue when the motor starts moving
   /// no longer needed with tension sensing
@@ -297,10 +384,15 @@ class MedicalSnake : protected DynamixelController
   /// smoothed current
   std::map<std::string, int32_t> smooth_current_;
 
+  /// calibration coefficient of the load cell sensor
   std::map<std::string, double> calib_coeff_;
+
+  /// calibration offset of the load cell sensor
   std::map<std::string, double> calib_offset_;
 
-  std::map<std::string, double> target_tension_;
+  /// the steering center position of the outer cables
+  std::map<std::string, int32_t> present_steer_center_outer_;
+
 };
 
 #endif //MEDICAL_SNAKE_H
