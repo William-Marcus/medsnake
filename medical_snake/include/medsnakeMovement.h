@@ -68,18 +68,18 @@ enum modes {
   DEMO,
 };
 
-class MedicalSnake : protected DynamixelController
+class MedsnakeMovement : protected DynamixelController
 {
  public:
   /**
-   * Create a MedicalSnake instance
+   * Create a MedsnakeMovement instance
    * 
    * @param port_name Medical snake USB port (Linux /dev/ttyUSB[X] Windows COM[X])
    */
-  MedicalSnake(const char* port_name);
+  MedsnakeMovement(const char* port_name);
 
   /**
-   * Initialize MedicalSnake
+   * Initialize MedsnakeMovement
    * 
    * @param config_path Path to medical snake configuration ([PATH_TO_SRC]/config/medical_snake.yaml)
    * @param dxl_config_path Path to dynamixel configuration ([PATH_TO_SRC]/config/dynamixels.yaml)

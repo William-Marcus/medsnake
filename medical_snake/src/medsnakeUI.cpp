@@ -1,14 +1,14 @@
-#include "medsnake_control.h"
+#include "medsnakeUI.h"
 
 
-MedsnakeControl::MedsnakeControl(const char* port_name, const char* config_path, const char* dxl_config_path) : snake_(port_name)
+MedsnakeUI::MedsnakeUI(const char* port_name, const char* config_path, const char* dxl_config_path) : snake_(port_name)
 {
   init_listener();
   init_tension_publisher();
   snake_.initialize(config_path, dxl_config_path);
 };
 
-void MedsnakeControl::command_set(const std_msgs::String::ConstPtr& msg)
+void MedsnakeUI::command_set(const std_msgs::String::ConstPtr& msg)
 { // callback function
   ROS_INFO("key pressed: [%s]", msg->data.c_str());
   std::string key = msg->data;
@@ -52,7 +52,7 @@ void MedsnakeControl::command_set(const std_msgs::String::ConstPtr& msg)
 }
 
 
-void MedsnakeControl::joystick_cb(const sensor_msgs::Joy::ConstPtr &msg) {
+void MedsnakeUI::joystick_cb(const sensor_msgs::Joy::ConstPtr &msg) {
   if (msg->buttons[7] == 1) {
     std::string key = "steer";
     x_joystick_pos = msg->axes[0];
@@ -90,22 +90,22 @@ void MedsnakeControl::joystick_cb(const sensor_msgs::Joy::ConstPtr &msg) {
   }
 }
 
-void MedsnakeControl::init_listener()
+void MedsnakeUI::init_listener()
 { // init subscriber
-  command_sub_ = nh_.subscribe("gui_commands", 100, &MedsnakeControl::command_set, this);
-  joystick_sub_ = nh_.subscribe("joy", 1, &MedsnakeControl::joystick_cb, this);
+  command_sub_ = nh_.subscribe("gui_commands", 100, &MedsnakeUI::command_set, this);
+  joystick_sub_ = nh_.subscribe("joy", 1, &MedsnakeUI::joystick_cb, this);
 }
 
-void MedsnakeControl::init_tension_publisher()
+void MedsnakeUI::init_tension_publisher()
 {
   tension_pub_ = nh_.advertise<medical_snake::Tension_readings>("tension_readings", 1);
   position_pub_ = nh_.advertise<medical_snake::Motor_positions>("motor_positions", 1);
   mode_pub_ = nh_.advertise<std_msgs::String>("medsnake_mode", 1);
 }
 
-void MedsnakeControl::snake_update() {snake_.update();}
+void MedsnakeUI::snake_update() {snake_.update();}
 
-void MedsnakeControl::publish_tension_reading()
+void MedsnakeUI::publish_tension_reading()
 {
   // publish updated tension readings message
   tension_dic_ = snake_.get_tension_fbk();
@@ -119,7 +119,7 @@ void MedsnakeControl::publish_tension_reading()
   tension_pub_.publish(tension_msg);
 }
 
-void MedsnakeControl::publish_motor_position()
+void MedsnakeUI::publish_motor_position()
 {
   motor_position_dic_ = snake_.get_motor_position_fbk();
 
@@ -132,13 +132,13 @@ void MedsnakeControl::publish_motor_position()
   position_pub_.publish(motor_msg);
 }
 
-void MedsnakeControl::publish_snake_mode() {
+void MedsnakeUI::publish_snake_mode() {
   std_msgs::String mode_msg;
   mode_msg.data = snake_.get_snake_mode();
   mode_pub_.publish(mode_msg);
 }
 
-void MedsnakeControl::emergency_stop()
+void MedsnakeUI::emergency_stop()
 {
   if (command_queue_.empty()){
     snake_.stop_all_motor();
@@ -149,7 +149,7 @@ void MedsnakeControl::emergency_stop()
   }
 }
 
-void MedsnakeControl::demo()
+void MedsnakeUI::demo()
 {
   command_queue_.erase(command_queue_.begin());
 
@@ -293,7 +293,7 @@ for (int i = 0; i < 2; i++){
 
 }
 
-void MedsnakeControl::advance()
+void MedsnakeUI::advance()
 {
   command_queue_.erase(command_queue_.begin());
   // command_queue_.clear();
@@ -305,7 +305,7 @@ void MedsnakeControl::advance()
   command_queue_.push_back("fwd_outer"); // Forward Outer
 }
 
-void MedsnakeControl::retract()
+void MedsnakeUI::retract()
 {
   command_queue_.erase(command_queue_.begin());
   // command_queue_.clear();
@@ -317,194 +317,194 @@ void MedsnakeControl::retract()
   command_queue_.push_back("back_outer"); // Forward Outer
 }
 
-void MedsnakeControl::loosen_inner_cont()
+void MedsnakeUI::loosen_inner_cont()
 {
   snake_.loosen_inner_cont();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::tighten_outer_A_cont()
+void MedsnakeUI::tighten_outer_A_cont()
 {
   snake_.tighten_outer_A_cont();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::tighten_outer_B_cont()
+void MedsnakeUI::tighten_outer_B_cont()
 {
   snake_.tighten_outer_B_cont();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::tighten_outer_C_cont()
+void MedsnakeUI::tighten_outer_C_cont()
 {
   snake_.tighten_outer_C_cont();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::loosen_outer_cont()
+void MedsnakeUI::loosen_outer_cont()
 {
   snake_.loosen_outer_cont();
   command_queue_.erase(command_queue_.begin());
 }
 
 // loosen individual outer snake cable
-void MedsnakeControl::loosen_outer_A_cont()
+void MedsnakeUI::loosen_outer_A_cont()
 {
   snake_.loosen_outer_A_cont();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::loosen_outer_B_cont()
+void MedsnakeUI::loosen_outer_B_cont()
 {
   snake_.loosen_outer_B_cont();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::loosen_outer_C_cont()
+void MedsnakeUI::loosen_outer_C_cont()
 {
   snake_.loosen_outer_C_cont();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::tighten_inner_cont()
+void MedsnakeUI::tighten_inner_cont()
 {
   snake_.tighten_inner_cont();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::tighten_outer_cont()
+void MedsnakeUI::tighten_outer_cont()
 {
   snake_.tighten_outer_cont();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::backward_both()
+void MedsnakeUI::backward_both()
 {
   snake_.backward_both();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::forward_both()
+void MedsnakeUI::forward_both()
 {
   snake_.forward_both();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::forward_both_cont()
+void MedsnakeUI::forward_both_cont()
 {
   snake_.forward_both_cont();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::backward_both_cont()
+void MedsnakeUI::backward_both_cont()
 {
   snake_.backward_both_cont();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::forward_inner_cont()
+void MedsnakeUI::forward_inner_cont()
 {
   snake_.forward_inner_cont();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::backward_inner_cont()
+void MedsnakeUI::backward_inner_cont()
 {
   snake_.backward_inner_cont();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::forward_outer_cont()
+void MedsnakeUI::forward_outer_cont()
 {
   snake_.forward_outer_cont();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::backward_outer_cont()
+void MedsnakeUI::backward_outer_cont()
 {
   snake_.backward_outer_cont();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::steer_left()
+void MedsnakeUI::steer_left()
 {
   snake_.steer_left();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::steer_right()
+void MedsnakeUI::steer_right()
 {
   snake_.steer_right();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::steer_up()
+void MedsnakeUI::steer_up()
 {
   snake_.steer_up();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::steer_down()
+void MedsnakeUI::steer_down()
 {
   snake_.steer_down();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::tighten_outer()
+void MedsnakeUI::tighten_outer()
 {
   snake_.tighten_outer();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::loosen_outer()
+void MedsnakeUI::loosen_outer()
 {
   snake_.loosen_outer();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::tighten_inner()
+void MedsnakeUI::tighten_inner()
 {
   snake_.tighten_inner();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::loosen_inner()
+void MedsnakeUI::loosen_inner()
 {
   snake_.loosen_inner();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::forward_inner()
+void MedsnakeUI::forward_inner()
 {
   snake_.forward_inner();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::backward_inner()
+void MedsnakeUI::backward_inner()
 {
   snake_.backward_inner();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::forward_outer()
+void MedsnakeUI::forward_outer()
 {
   snake_.forward_outer();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::backward_outer()
+void MedsnakeUI::backward_outer()
 {
   snake_.backward_outer();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::home_rail()
+void MedsnakeUI::home_rail()
 {
   snake_.home_rail();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::home()
+void MedsnakeUI::home()
 {
   command_queue_.erase(command_queue_.begin());
   command_queue_.push_back("loose_inner"); // Loosen Inner
@@ -512,44 +512,44 @@ void MedsnakeControl::home()
   command_queue_.push_back("home_rail"); // home rail
 }
 
-void MedsnakeControl::tighten_outer_A()
+void MedsnakeUI::tighten_outer_A()
 {
   snake_.tighten_outer_A();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::tighten_outer_B()
+void MedsnakeUI::tighten_outer_B()
 {
   snake_.tighten_outer_B();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::tighten_outer_C()
+void MedsnakeUI::tighten_outer_C()
 {
   snake_.tighten_outer_C();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::loosen_outer_A()
+void MedsnakeUI::loosen_outer_A()
 {
   snake_.loosen_outer_A();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::loosen_outer_B()
+void MedsnakeUI::loosen_outer_B()
 {
   snake_.loosen_outer_B();
   command_queue_.erase(command_queue_.begin());
 }
 
-void MedsnakeControl::loosen_outer_C()
+void MedsnakeUI::loosen_outer_C()
 {
   snake_.loosen_outer_C();
   command_queue_.erase(command_queue_.begin());
 }
 
 // Steering to custom angle
-void MedsnakeControl::steer_angle()
+void MedsnakeUI::steer_angle()
 {
   snake_.steer_outer(x_joystick_pos,y_joystick_pos);
   // snake_.steer_angle(x_joystick_pos, y_joystick_pos);
@@ -558,7 +558,7 @@ void MedsnakeControl::steer_angle()
 }
 
 // Steering to custom angle
-void MedsnakeControl::update_steer_angle()
+void MedsnakeUI::update_steer_angle()
 {
   snake_.update_steer_angle_goal(x_joystick_pos,y_joystick_pos);
   // command_queue_.erase(command_queue_.begin());

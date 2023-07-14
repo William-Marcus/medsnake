@@ -5,7 +5,7 @@
  * movement and shape in Rviz
  */
 
-#include "medsnake_control.h"
+#include "medsnakeUI.h"
 #include "cmd_joint_state_publisher.h"
 
 

@@ -13,17 +13,17 @@
 #include <sensor_msgs/Joy.h>
 #include "medical_snake/Tension_readings.h"
 #include "medical_snake/Motor_positions.h"
-#include "medical_snake.h"
+#include "medsnakeMovement.h"
 #include <std_msgs/Bool.h>
 #include <geometry_msgs/Vector3Stamped.h>
 
 
-class MedsnakeControl
+class MedsnakeUI
 {
 
  public:
   /// Constructor for SnakeControl instance
-  MedsnakeControl(const char* port_name, const char* config_path,
+  MedsnakeUI(const char* port_name, const char* config_path,
                        const char* dxl_config_path);
 
   /// initialize the snake
