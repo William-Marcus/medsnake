@@ -74,6 +74,11 @@ void MedsnakeControl::joystick_cb(const sensor_msgs::Joy::ConstPtr &msg) {
     command_queue_.clear();
     command_queue_.push_back(key);
     steering_flag_ = true;
+  } else if (msg->buttons[6] == 1) {  // TODO: Check if buttons[6] is really the home button, and ensure this doesn't break the rest of the code
+    std::string key = "home_rail";
+    snake_.home_rail();
+    command_queue_.clear();
+    command_queue_.push_back(key);
   } else {
     x_joystick_pos = 0;
     y_joystick_pos = 0;
